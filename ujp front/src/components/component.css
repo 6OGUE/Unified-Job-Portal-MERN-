@@ -1,0 +1,75 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f7f9fc;
+  color: #333;
+}
+
+.register-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 500px;
+  margin: 20px auto; /* was 40px, reduced to move it up */
+  padding: 20px 25px;
+}
+
+
+.register-container h2 {
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #222;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-form input[type="text"],
+.register-form input[type="email"],
+.register-form input[type="password"],
+.register-form input[type="date"] {
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  border: 1.8px solid #ddd;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.register-form input[type="text"]:focus,
+.register-form input[type="email"]:focus,
+.register-form input[type="password"]:focus,
+.register-form input[type="date"]:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.file-label {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.file-label input[type="file"] {
+  display: block;
+  margin-top: 6px;
+}
+
+.register-form button {
+  padding: 12px 0;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.register-form button:hover {
+  background-color: #2563eb;
+}
