@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import './component.css';
 
+async function registerUser(formData) {
+  const response = await fetch('http://localhost:5000/api/users/register?role=employee', {
+    method: 'POST',
+    body: formData,  // sending FormData for file upload
+  });
+  return response.json();
+}
 
 export default function Employeereg() {
   const [formData, setFormData] = useState({
@@ -10,28 +17,53 @@ export default function Employeereg() {
     confirmPassword: "",
     cv: null,
   });
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: files ? files[0] : value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // handle form submission logic here
+    setMessage("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setMessage("Passwords do not match!");
+      return;
+    }
+
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("email", formData.email);
+    data.append("password", formData.password);
+    data.append("role", "employee");  // still include role in formData if backend needs it
+    if (formData.cv) {
+      data.append("cv", formData.cv);
+    }
+
+    setLoading(true);
+    try {
+      const result = await registerUser(data);
+      setMessage(result.message || "Registration failed");
+    } catch (error) {
+      setMessage("Error: " + error.message);
+    }
+    setLoading(false);
   };
 
   return (
     <div className="register-container">
       <h2 style={{
-          marginBottom: '50px',
-          fontFamily: 'monospace',
-          fontSize: '30px'
-        }}>Employee Registration</h2>
-        
+        marginBottom: '50px',
+        fontFamily: 'monospace',
+        fontSize: '30px'
+      }}>Employee Registration</h2>
+
       <form onSubmit={handleSubmit} className="register-form">
         <input
           type="text"
@@ -67,9 +99,21 @@ export default function Employeereg() {
           required
           minLength={6}
         />
-        <br></br>
-        <button type="submit">Register</button>
+        <label className="file-label">
+          Upload CV (PDF)
+          <input
+            type="file"
+            name="cv"
+            accept=".pdf"
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <button type="submit" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
+        </button>
       </form>
+      {message && <p style={{ marginTop: '10px' }}>{message}</p>}
     </div>
   );
 }

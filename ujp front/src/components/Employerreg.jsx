@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import './component.css';
 
+// Example registerUser API function with FormData support for file upload
+async function registerUser(formData) {
+  const response = await fetch('http://localhost:5000/api/users/register?role=employer', {
+    method: 'POST',
+    // 'Content-Type' not set because we're sending FormData (browser sets it automatically)
+    body: formData,
+  });
+  return response.json();
+}
 
 export default function Employerreg() {
   const [formData, setFormData] = useState({
@@ -13,6 +22,8 @@ export default function Employerreg() {
     location: "",
     establishedDate: "",
   });
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -22,9 +33,36 @@ export default function Employerreg() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // handle form submission logic here
+    setMessage("");
+
+    if (formData.password !== formData.confirmPassword) {
+      setMessage("Passwords do not match!");
+      return;
+    }
+
+    // Prepare FormData to send file and other fields
+    const data = new FormData();
+    data.append("name", formData.name);
+    data.append("email", formData.email);
+    data.append("password", formData.password);
+    data.append("role", "employer"); // role still sent in form data if needed by backend
+    data.append("companyName", formData.companyName);
+    data.append("location", formData.location);
+    data.append("establishedDate", formData.establishedDate);
+    if (formData.companyCertificate) {
+      data.append("companyCertificate", formData.companyCertificate);
+    }
+
+    setLoading(true);
+    try {
+      const result = await registerUser(data);
+      setMessage(result.message || "Registration failed");
+    } catch (error) {
+      setMessage("Error: " + error.message);
+    }
+    setLoading(false);
   };
 
   return (
@@ -103,8 +141,11 @@ export default function Employerreg() {
             required
           />
         </label>
-        <button type="submit">Register</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Registering..." : "Register"}
+        </button>
       </form>
+      {message && <p style={{ marginTop: '10px' }}>{message}</p>}
     </div>
   );
 }

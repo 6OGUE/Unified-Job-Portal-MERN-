@@ -4,10 +4,7 @@ import { Link } from 'react-router-dom';
 function Register() {
   const [selectedRole, setSelectedRole] = useState('');
 
-  const handleSelect = (role) => {
-    setSelectedRole(role);
-    alert(`You selected: ${role}`);
-  };
+  
 
   const circleStyle = (role) => ({
     height: '260px',
@@ -60,12 +57,12 @@ function Register() {
       <div style={{ display: 'flex', gap: '100px' }}>
         {/* Employer Option */}
         <Link to="/Employerreg" style={{ textAlign: 'center', textDecoration: 'none' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={circleStyle('Employer')}>
-            <img src="/icons/employer.png" alt="Employer" style={{ width: '120px', height: '120px' }} />
+          <div style={{ textAlign: 'center' }}>
+            <div style={circleStyle('Employer')}>
+              <img src="/icons/employer.png" alt="Employer" style={{ width: '120px', height: '120px' }} />
+            </div>
+            <div style={textStyle}>Employer</div>
           </div>
-          <div style={textStyle}>Employer</div>
-        </div>
         </Link>
 
         {/* Employee Option */}
@@ -74,7 +71,7 @@ function Register() {
             <div style={circleStyle('Employee')}>
               <img src="/icons/employee.png" alt="Employee" style={{ width: '120px', height: '120px' }} />
             </div>
-            <div style={textStyle}>Employee</div>
+            <div style={textStyle}>Job Seeker</div>
           </div>
         </Link>
       </div>

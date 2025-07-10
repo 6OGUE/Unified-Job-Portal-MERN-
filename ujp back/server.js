@@ -3,6 +3,9 @@ import express from 'express';          // Core framework for creating APIs
 import mongoose from 'mongoose';        // MongoDB ODM (Object Data Modeling)
 import dotenv from 'dotenv';            // Loads environment variables from .env file
 import cors from 'cors';                // Enables Cross-Origin requests (React <-> Node)
+import userRoutes from './routes/userRoutes.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -15,11 +18,18 @@ app.use(cors());
 
 // Middleware to parse incoming JSON requests
 app.use(express.json());
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve the uploads folder statically
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 // Test route to verify server is working
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
+
+app.use('/api/users', userRoutes);
 
 // Connect to MongoDB using Mongoose
 mongoose.connect(process.env.MONGO_URI)
