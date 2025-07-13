@@ -34,7 +34,11 @@ function Login() {
         navigate('/employer-dashboard');
       } else if (data.user.role === 'employee') {
         navigate('/employee-dashboard');
-      } else {
+      } 
+        else if (data.user.role === 'admin') {
+        navigate('/admin/dashboard');
+      }
+      else {
         setMessage('Unknown user role');
       }
 
