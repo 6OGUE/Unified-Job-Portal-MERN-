@@ -1,5 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const navLinkStyle = {
   textDecoration: 'none',
@@ -11,7 +12,15 @@ const navLinkStyle = {
   color: 'white',
 };
 
-function Navbar() {
+function EmployerNavbar() {
+  const { role, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <div
       style={{
@@ -21,19 +30,24 @@ function Navbar() {
         justifyContent: 'space-between',
         alignItems: 'center',
         height: '60px',
-        fontSize:'20px',
-        fontFamily:'monospace'
+        fontSize: '20px',
+        fontFamily: 'monospace',
       }}
     >
       <img src="/logo.png" height="80px" width="110px" alt="Logo" />
-      <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}></div>
       <div>
-        <Link to="/postjob" style={navLinkStyle}>POST JOB</Link>
-        <Link to="/applications" style={navLinkStyle}>APPLICATIONS</Link>
-        <Link to="/logout" style={navLinkStyle}>LOG OUT</Link>
+        {role === 'employer' && (
+          <>
+            <Link to="/postjob" style={navLinkStyle}>POST JOB</Link>
+            <Link to="/applications" style={navLinkStyle}>APPLICATIONS</Link>
+          </>
+        )}
+        {role && (
+          <button onClick={handleLogout} style={navLinkStyle}>LOG OUT</button>
+        )}
       </div>
     </div>
   );
 }
 
-export default Navbar;
+export default EmployerNavbar;

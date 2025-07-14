@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext.jsx';
+
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext); // ✅ Get login function from context
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,20 +28,18 @@ function Login() {
         return;
       }
 
-      // Save token and role to localStorage
+      // Save token and update context with role
       localStorage.setItem('token', data.token);
-      localStorage.setItem('role', data.user.role);
+      login(data.user.role); // ✅ trigger AuthContext update
 
       // Redirect based on role
       if (data.user.role === 'employer') {
         navigate('/employer-dashboard');
       } else if (data.user.role === 'employee') {
         navigate('/employee-dashboard');
-      } 
-        else if (data.user.role === 'admin') {
+      } else if (data.user.role === 'admin') {
         navigate('/admin/dashboard');
-      }
-      else {
+      } else {
         setMessage('Unknown user role');
       }
 

@@ -1,8 +1,6 @@
 import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext.jsx';
-
-
 
 const navLinkStyle = {
   textDecoration: 'none',
@@ -15,13 +13,7 @@ const navLinkStyle = {
 };
 
 function Navbar() {
-  const { role, logout } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-  logout();       // <-- use logout from AuthContext here
-  navigate('/login');
-};
+  const { role } = useContext(AuthContext);
 
   return (
     <div
@@ -37,16 +29,13 @@ function Navbar() {
       }}
     >
       <img src="/logo.png" height="80px" width="110px" alt="Logo" />
-      <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}></div>
       <div>
-        {role === 'admin' && (
+        {!role && (
           <>
-            <Link to="/employer" style={navLinkStyle}>EMPLOYERS</Link>
-            <Link to="/employee" style={navLinkStyle}>SEEKERS</Link>
+            <Link to="/" style={navLinkStyle}>HOME</Link>
+            <Link to="/register" style={navLinkStyle}>REGISTER</Link>
+            <Link to="/login" style={navLinkStyle}>LOGIN</Link>
           </>
-        )}
-        {role && (
-          <button onClick={handleLogout} style={navLinkStyle}>LOG OUT</button>
         )}
       </div>
     </div>
