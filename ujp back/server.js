@@ -6,15 +6,17 @@ import cors from 'cors';                // Enables Cross-Origin requests (React 
 import userRoutes from './routes/userRoutes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import adminRoutes from './routes/adminRoutes.js';
 
 // Load environment variables from .env file
 dotenv.config();
 
 // Initialize Express app
 const app = express();
-
-// Middleware to enable CORS (Frontend-Backend communication)
 app.use(cors());
+app.use('/api/admin', adminRoutes);
+// Middleware to enable CORS (Frontend-Backend communication)
+
 
 // Middleware to parse incoming JSON requests
 app.use(express.json());

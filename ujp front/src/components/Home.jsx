@@ -31,7 +31,7 @@ function Home() {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      backgroundColor: '#0f172a'
+      backgroundColor: '#000000ff'
     }}>
       <div style={{
         flexGrow: 1,

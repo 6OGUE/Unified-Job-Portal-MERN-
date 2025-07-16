@@ -41,8 +41,8 @@ function Navbar() {
       <div>
         {role === 'admin' && (
           <>
-            <Link to="/employer" style={navLinkStyle}>EMPLOYERS</Link>
-            <Link to="/employee" style={navLinkStyle}>SEEKERS</Link>
+            <Link to="/admin/employers" style={navLinkStyle}>EMPLOYERS</Link>
+            <Link to="/admin/employees" style={navLinkStyle}>SEEKERS</Link>
           </>
         )}
         {role && (

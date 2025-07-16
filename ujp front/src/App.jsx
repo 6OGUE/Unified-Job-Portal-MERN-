@@ -10,6 +10,8 @@ import Employerreg from './components/Employerreg';
 import EmployerDashboard from './dashboard/EmployerDashboard';
 import EmployeeDashboard from './dashboard/EmployeeDashboard';
 import AdminDashboard from './dashboard/AdminDashboard';
+import EmployeeView from './components/admin/EmployeeView';
+import EmployerView from './components/admin/EmployerView';
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
         <Route path="/employer-dashboard" element={<EmployerDashboard />} />
         <Route path="/employee-dashboard" element={<EmployeeDashboard />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/employees" element={<EmployeeView />} />
+        <Route path="/admin/employers" element={<EmployerView />} />
       </Routes>
       
     </BrowserRouter>
