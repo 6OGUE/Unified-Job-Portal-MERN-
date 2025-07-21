@@ -1,25 +1,23 @@
 import express from 'express';
+import multer from 'multer';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
-import upload from '../middleware/upload.js';
 import { registerUser, loginUser } from '../controllers/userController.js';
 
 const router = express.Router();
 
-router.post(
-  '/register',
-  (req, res, next) => {
-    const uploadField = req.query.role === 'employer' ? 'companyCertificate' : 'cv';
-    const dynamicUpload = upload.single(uploadField);
-    dynamicUpload(req, res, function (err) {
-      if (err) {
-        return res.status(400).json({ message: 'File upload error', error: err.message });
-      }
-      next();
-    });
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype !== 'application/pdf') {
+      return cb(new Error('Only PDF files are allowed'));
+    }
+    cb(null, true);
   },
-  registerUser
-);
+});
+
+router.post('/register', upload.single('companyCertificate'), registerUser);
 
 router.post('/login', loginUser);
 
@@ -33,7 +31,7 @@ router.post('/create-admin', async (req, res) => {
       name: 'Admin',
       email: 'admin@ujp.com',
       password: hashedPassword,
-      role: 'admin'
+      role: 'admin',
     });
 
     await adminUser.save();

@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import './component.css';
 
-// Example registerUser API function with FormData support for file upload
 async function registerUser(formData) {
-  const response = await fetch('http://localhost:5000/api/users/register?role=employer', {
+  const response = await fetch('http://localhost:5000/api/users/register', {
     method: 'POST',
-    // 'Content-Type' not set because we're sending FormData (browser sets it automatically)
+    // Do NOT set Content-Type header for FormData; browser handles it automatically
     body: formData,
   });
   return response.json();
@@ -18,19 +17,23 @@ export default function Employerreg() {
     password: "",
     confirmPassword: "",
     companyName: "",
-    companyCertificate: null,
     location: "",
     establishedDate: "",
   });
+  const [certificateFile, setCertificateFile] = useState(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      [name]: value,
     }));
+  };
+
+  const handleFileChange = (e) => {
+    setCertificateFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -42,18 +45,20 @@ export default function Employerreg() {
       return;
     }
 
-    // Prepare FormData to send file and other fields
+    if (!certificateFile) {
+      setMessage("Please upload a company certificate file.");
+      return;
+    }
+
     const data = new FormData();
     data.append("name", formData.name);
     data.append("email", formData.email);
     data.append("password", formData.password);
-    data.append("role", "employer"); // role still sent in form data if needed by backend
+    data.append("role", "employer");
     data.append("companyName", formData.companyName);
     data.append("location", formData.location);
     data.append("establishedDate", formData.establishedDate);
-    if (formData.companyCertificate) {
-      data.append("companyCertificate", formData.companyCertificate);
-    }
+    data.append("companyCertificate", certificateFile);
 
     setLoading(true);
     try {
@@ -68,12 +73,12 @@ export default function Employerreg() {
   return (
     <div className="register-container">
       <h2 style={{
-          marginBottom: '50px',
+          marginBottom: '50px', marginLeft:'70px',
           fontFamily: 'monospace',
           fontSize: '30px'
         }}>Employer Registration</h2>
-        
-      <form onSubmit={handleSubmit} className="register-form">
+
+      <form onSubmit={handleSubmit} className="register-form" encType="multipart/form-data">
         <input
           type="text"
           name="name"
@@ -131,21 +136,73 @@ export default function Employerreg() {
           onChange={handleChange}
           required
         />
-        <label className="file-label">
-          Upload Company Certificate (PDF)
-          <input
-            type="file"
-            name="companyCertificate"
-            accept=".pdf"
-            onChange={handleChange}
-            required
-          />
+
+        {/* Added visible label for file input */}
+        <label
+          htmlFor="companyCertificate"
+          style={{
+            fontWeight: '700',
+            fontSize: '16px',
+            marginTop: '15px',
+            marginBottom: '6px',
+            display: 'block',
+            color: '#333',
+            fontFamily: 'monospace',
+          }}
+        >
+          Company Certificate
         </label>
-        <button type="submit" disabled={loading}>
-          {loading ? "Registering..." : "Register"}
+
+        <input
+          id="companyCertificate"
+          type="file"
+          name="companyCertificate"
+          accept=".pdf,.jpg,.jpeg,.png"
+          onChange={handleFileChange}
+          required
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            position: 'relative',marginTop:'12px',
+            paddingRight: loading ? '30px' : undefined,
+          }}
+        >
+          {loading ? (
+            <>
+              Registering
+              <span
+                style={{
+                  display: 'inline-block',
+                  marginLeft: '8px',
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid #fff',
+                  borderTop: '2px solid transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                  verticalAlign: 'middle',
+                }}
+              />
+              ...
+            </>
+          ) : (
+            "Register"
+          )}
         </button>
       </form>
       {message && <p style={{ marginTop: '10px' }}>{message}</p>}
+
+      {/* Inline keyframes for spinner animation */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+          }
+        `}
+      </style>
     </div>
   );
 }

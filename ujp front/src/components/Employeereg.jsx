@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import './component.css';
 
-async function registerUser(formData) {
-  const response = await fetch('http://localhost:5000/api/users/register?role=employee', {
+async function registerUser(data) {
+  const response = await fetch('http://localhost:5000/api/users/register', {
     method: 'POST',
-    body: formData,  // sending FormData for file upload
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),  // Send JSON, not FormData
   });
   return response.json();
 }
@@ -15,16 +18,15 @@ export default function Employeereg() {
     email: "",
     password: "",
     confirmPassword: "",
-    cv: null,
   });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      [name]: value,
     }));
   };
 
@@ -37,14 +39,12 @@ export default function Employeereg() {
       return;
     }
 
-    const data = new FormData();
-    data.append("name", formData.name);
-    data.append("email", formData.email);
-    data.append("password", formData.password);
-    data.append("role", "employee");  // still include role in formData if backend needs it
-    if (formData.cv) {
-      data.append("cv", formData.cv);
-    }
+    const data = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      role: "employee",
+    };
 
     setLoading(true);
     try {
@@ -59,7 +59,7 @@ export default function Employeereg() {
   return (
     <div className="register-container">
       <h2 style={{
-        marginBottom: '50px',
+        marginBottom: '50px',marginLeft:'70px',
         fontFamily: 'monospace',
         fontSize: '30px'
       }}>Employee Registration</h2>
@@ -98,17 +98,7 @@ export default function Employeereg() {
           onChange={handleChange}
           required
           minLength={6}
-        />
-        <label className="file-label">
-          Upload CV (PDF)
-          <input
-            type="file"
-            name="cv"
-            accept=".pdf"
-            onChange={handleChange}
-            required
-          />
-        </label>
+        /><br></br>
         <button type="submit" disabled={loading}>
           {loading ? "Registering..." : "Register"}
         </button>
