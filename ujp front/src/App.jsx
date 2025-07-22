@@ -12,6 +12,8 @@ import EmployeeDashboard from './dashboard/EmployeeDashboard';
 import AdminDashboard from './dashboard/AdminDashboard';
 import EmployeeView from './components/admin/EmployeeView';
 import EmployerView from './components/admin/EmployerView';
+// Import post job with a valid variable name
+import PostJob from './components/employer/post-job.jsx';
 
 function App() {
   return (
@@ -28,8 +30,10 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/employees" element={<EmployeeView />} />
         <Route path="/admin/employers" element={<EmployerView />} />
+        {/* Use uppercase component name */}
+        <Route path="/post-job" element={<PostJob />} />
       </Routes>
-      
+      <Footer />
     </BrowserRouter>
   );
 }

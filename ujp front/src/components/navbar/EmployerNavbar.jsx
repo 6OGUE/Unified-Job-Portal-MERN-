@@ -38,7 +38,7 @@ function EmployerNavbar() {
       <div>
         {role === 'employer' && (
           <>
-            <Link to="/postjob" style={navLinkStyle}>POST JOB</Link>
+            <Link to="/post-job" style={navLinkStyle}>POST JOB</Link>
             <Link to="/applications" style={navLinkStyle}>APPLICATIONS</Link>
           </>
         )}
