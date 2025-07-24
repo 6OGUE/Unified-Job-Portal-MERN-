@@ -7,17 +7,20 @@ import { registerUser, loginUser } from '../controllers/userController.js';
 const router = express.Router();
 
 const storage = multer.memoryStorage();
+
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype !== 'application/pdf') {
-      return cb(new Error('Only PDF files are allowed'));
+    const allowedTypes = /jpeg|jpg|png|pdf/;
+    if (allowedTypes.test(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type.'), false);
     }
-    cb(null, true);
   },
 });
 
-router.post('/register', upload.single('companyCertificate'), registerUser);
+router.post('/register', upload.any(), registerUser);
 
 router.post('/login', loginUser);
 

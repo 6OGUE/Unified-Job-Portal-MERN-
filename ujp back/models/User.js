@@ -2,19 +2,34 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true },
+  dateOfBirth: { type: Date },
+  gender: { type: String },
+  education: {
+    type: String,
+    enum: ['Higher Secondary', 'Graduation', 'Postgraduation'],
+  },
+  cvFilePath: { type: String },
+  certificates: [
+    {
+      name: { type: String },
+      filePath: { type: String },
+    }
+  ],  // Array of certificates with name and filePath
+  email: { type: String, required: true, unique: true, trim: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['employee', 'employer', 'admin'], required: true },
-  // Add certificateHash only for employers
-  certificateHash: { type: String }, // optional, only saved if employer uploads certificate
-
-  // Add employer-specific fields
-  companyName: { type: String, trim: true },
-  location: { type: String, trim: true },
+  role: { 
+    type: String, 
+    required: true, 
+    enum: ['employee', 'job seeker', 'employer', 'admin'] 
+  },
+  companyName: { type: String },
+  location: { type: String },
   establishedDate: { type: Date },
+  linkedinProfile: { type: String },
+  githubProfile: { type: String },
+  certificateHash: { type: String },  // For employer's company certificate hash
 }, { timestamps: true });
 
-// Fix for OverwriteModelError:
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;

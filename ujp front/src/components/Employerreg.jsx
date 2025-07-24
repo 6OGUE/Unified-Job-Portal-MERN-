@@ -201,6 +201,14 @@ export default function Employerreg() {
             0% { transform: rotate(0deg);}
             100% { transform: rotate(360deg);}
           }
+          
+          body {
+          margin: 0;
+          font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+          background: #000000ff;
+          color: #333;
+          min-height: 130vh;
+}
         `}
       </style>
     </div>

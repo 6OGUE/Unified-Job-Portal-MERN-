@@ -35,7 +35,7 @@ function Login() {
       // Redirect based on role
       if (data.user.role === 'employer') {
         navigate('/employer-dashboard');
-      } else if (data.user.role === 'employee') {
+      } else if (data.user.role === 'employee'|| data.user.role === 'job seeker') {
         navigate('/employee-dashboard');
       } else if (data.user.role === 'admin') {
         navigate('/admin/dashboard');
