@@ -40,3 +40,47 @@
 .read-the-docs {
   color: #888;
 }
+/* Global CSS Reset - Add this to your index.css or App.css */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+#root {
+  height: 100%;
+}
+
+/* Ensure no extra margins/padding on common elements */
+div, section, main, article {
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove default margins from headings and paragraphs */
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+  margin-bottom: 0;
+}
+
+/* Table styling improvements */
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+/* Button reset */
+button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+}

@@ -14,7 +14,35 @@ router.get('/employees', async (req, res) => {
   }
 });
 
-// ✅ Add this for employers
+// DELETE /api/admin/employees/:id  <-- new route to delete employee by id
+router.delete('/employees/:id', async (req, res) => {
+  const employeeId = req.params.id;
+  try {
+    const deletedUser = await User.findOneAndDelete({ _id: employeeId, role: 'employee' });
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+    res.json({ message: 'Employee deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting employee:', error);
+    res.status(500).json({ message: 'Server error deleting employee' });
+  }
+});
+router.delete('/employers/:id', async (req, res) => {
+  const employerId = req.params.id;
+  try {
+    const deletedUser = await User.findOneAndDelete({ _id: employerId, role: 'employer' });
+    if (!deletedUser) {
+      return res.status(404).json({ message: 'Employer not found' });
+    }
+    res.json({ message: 'Employer deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting employer:', error);
+    res.status(500).json({ message: 'Server error deleting employer' });
+  }
+});
+
+// GET /api/admin/employers
 router.get('/employers', async (req, res) => {
   try {
     const employers = await User.find({ role: 'employer' }).select('-password');
