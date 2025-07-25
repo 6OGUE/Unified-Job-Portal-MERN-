@@ -69,10 +69,11 @@ async function registerJobSeeker(req, res) {
     name,
     email,
     password,
-    dob,
+    dateOfBirth,
     gender,
     education,
     role,
+    about
   } = req.body;
 
   const cvFile = req.files.find(file => file.fieldname === 'cv');
@@ -133,11 +134,12 @@ async function registerJobSeeker(req, res) {
     email,
     password: hashedPassword,
     role: (role === 'job seeker') ? 'job seeker' : 'employee',
-    dateOfBirth: dob,
+    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
     gender,
     education,
     certificates,
     cvFilePath,
+    about: about || '',
   });
 
   await user.save();

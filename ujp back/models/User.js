@@ -4,9 +4,10 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   dateOfBirth: { type: Date },
   gender: { type: String },
+  about: { type: String, trim: true }, // <-- Added field
   education: {
     type: String,
-    enum: ['Higher Secondary', 'Graduation', 'Postgraduation'],
+    enum: ['Matriculation', 'Higher Secondary', 'Graduation', 'Postgraduation'],
   },
   cvFilePath: { type: String },
   certificates: [
@@ -14,7 +15,7 @@ const userSchema = new mongoose.Schema({
       name: { type: String },
       filePath: { type: String },
     }
-  ],  // Array of certificates with name and filePath
+  ],
   email: { type: String, required: true, unique: true, trim: true },
   password: { type: String, required: true },
   role: { 
@@ -27,7 +28,7 @@ const userSchema = new mongoose.Schema({
   establishedDate: { type: Date },
   linkedinProfile: { type: String },
   githubProfile: { type: String },
-  certificateHash: { type: String },  // For employer's company certificate hash
+  certificateHash: { type: String },
 }, { timestamps: true });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

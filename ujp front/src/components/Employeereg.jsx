@@ -11,7 +11,7 @@ async function registerUser(formData) {
 
 export default function JobSeekerReg() {
   const [formData, setFormData] = useState({
-    name: "", dob: "", gender: "", email: "", password: ""
+    name: "", dob: "", gender: "", about: "", email: "", password: ""
   });
 
   const [dobInputType, setDobInputType] = useState('text');
@@ -60,14 +60,14 @@ export default function JobSeekerReg() {
     data.append("name", formData.name);
     data.append("dateOfBirth", formData.dob);
     data.append("gender", formData.gender);
+    data.append("about", formData.about);
     data.append("education", education);
     data.append("email", formData.email);
     data.append("password", formData.password);
-    data.append("role", "employee"); // Or 'job seeker' based on your logic
+    data.append("role", "employee");
 
     if (cv) data.append("cv", cv);
 
-    // Append certificates as per backend expected keys
     certificates.forEach((cert, index) => {
       if (cert.title && cert.file) {
         data.append(`certificates_title_${index}`, cert.title);
@@ -84,7 +84,6 @@ export default function JobSeekerReg() {
     }
     setLoading(false);
   };
-  
 
   const sectionHeaderStyle = {
     fontWeight: 'bold', fontSize: '18px', marginTop: '30px',
@@ -100,7 +99,6 @@ export default function JobSeekerReg() {
 
       <form onSubmit={handleSubmit} className="register-form" encType="multipart/form-data">
 
-        {/* Account Credentials */}
         <h3 style={sectionHeaderStyle}>Account Credentials</h3>
         <input
           type="email"
@@ -119,7 +117,6 @@ export default function JobSeekerReg() {
           required
         />
 
-        {/* Personal Information */}
         <h3 style={sectionHeaderStyle}>Personal Information</h3>
         <input
           type="text"
@@ -140,43 +137,51 @@ export default function JobSeekerReg() {
           required
         />
         <select
-  name="gender"
-  value={formData.gender}
-  onChange={handleChange}
-  required
-  style={{
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    MozAppearance: 'none',
-    backgroundColor: '#f9f9f9',
-    border: '1.5px solid #888',
-    borderRadius: '6px',
-    padding: '8px 40px 8px 12px',
-    fontSize: '16px',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    color: '#333',
-    cursor: 'pointer',
-    width: '100%',
-    maxWidth: '300px',
-    backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><polyline points='6 9 12 15 18 9'></polyline></svg>")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 12px center',
-    backgroundSize: '16px 16px',
-  }}
-  onFocus={e => e.target.style.borderColor = '#005fcc'}
-  onBlur={e => e.target.style.borderColor = '#888'}
->
-  <option value="">Select Gender</option>
-  <option value="male">Male</option>
-  <option value="female">Female</option>
-  <option value="other">Other</option>
-</select>
+          name="gender"
+          value={formData.gender}
+          onChange={handleChange}
+          required
+          style={{
+            appearance: 'none',
+            WebkitAppearance: 'none',
+            MozAppearance: 'none',
+            backgroundColor: '#f9f9f9',
+            border: '1.5px solid #888',
+            borderRadius: '6px',
+            padding: '8px 40px 8px 12px',
+            fontSize: '16px',
+            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            color: '#333',
+            cursor: 'pointer',
+            width: '100%',
+            maxWidth: '300px',
+            backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><polyline points='6 9 12 15 18 9'></polyline></svg>")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 12px center',
+            backgroundSize: '16px 16px',
+          }}
+          onFocus={e => e.target.style.borderColor = '#005fcc'}
+          onBlur={e => e.target.style.borderColor = '#888'}
+        >
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
 
+        <textarea
+          name="about"
+          placeholder="About Me (Brief Description)"
+          value={formData.about}
+          onChange={handleChange}
+          rows="4"
+          style={{ width: '100%', marginTop: '15px', padding: '10px', fontSize: '15px' }}
+          required
+        />
 
-        {/* Education */}
         <h3 style={sectionHeaderStyle}>Education</h3>
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-          {["Higher Secondary", "Graduation", "Postgraduation"].map((level) => (
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          {["Matriculation", "Higher Secondary", "Graduation", "Postgraduation"].map((level) => (
             <label key={level}>
               <input
                 type="radio"
@@ -190,7 +195,6 @@ export default function JobSeekerReg() {
           ))}
         </div>
 
-        {/* CV Upload */}
         <h3 style={sectionHeaderStyle}>CV Upload</h3>
         <input
           type="file"
@@ -200,7 +204,6 @@ export default function JobSeekerReg() {
           required
         />
 
-        {/* Multiple Certificates */}
         <h3 style={sectionHeaderStyle}>Certificates Upload</h3>
         {certificates.map((cert) => (
           <div key={cert.id} style={{ marginBottom: '15px', border: '1px dashed #ccc', padding: '10px', borderRadius: '4px' }}>
