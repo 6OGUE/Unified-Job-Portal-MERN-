@@ -2,11 +2,21 @@ import React, { useState } from "react";
 import './component.css';
 
 async function registerUser(formData) {
-  const response = await fetch('http://localhost:5000/api/users/register', {
-    method: 'POST',
-    body: formData,
-  });
-  return response.json();
+  try {
+    const response = await fetch('http://localhost:5000/api/users/register', {
+      method: 'POST',
+      body: formData,
+    });
+    // Check if the response is OK (status 200-299)
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error during registerUser fetch:", error);
+    throw error; // Re-throw to be caught by the handleSubmit's try-catch
+  }
 }
 
 export default function JobSeekerReg() {
@@ -17,6 +27,7 @@ export default function JobSeekerReg() {
   const [dobInputType, setDobInputType] = useState('text');
   const [cv, setCv] = useState(null);
   const [education, setEducation] = useState("");
+  // Ensure certificate structure is consistent
   const [certificates, setCertificates] = useState([{ id: Date.now(), title: "", file: null }]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,35 +65,44 @@ export default function JobSeekerReg() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
+    setMessage(""); // Clear previous messages
+    setLoading(true);
+
     const data = new FormData();
 
+    // Append standard form data
     data.append("name", formData.name);
-    data.append("dateOfBirth", formData.dob);
+    data.append("dateOfBirth", formData.dob); // Use dateOfBirth as per typical Mongoose schemas for clarity
     data.append("gender", formData.gender);
     data.append("about", formData.about);
     data.append("education", education);
     data.append("email", formData.email);
     data.append("password", formData.password);
-    data.append("role", "employee");
+    data.append("role", "employee"); // This is crucial for distinguishing roles on the backend
 
-    if (cv) data.append("cv", cv);
+    // Append CV if available
+    if (cv) {
+      data.append("cv", cv);
+    }
 
+    // Append certificates
     certificates.forEach((cert, index) => {
+      // Only append if both title and file exist
       if (cert.title && cert.file) {
-        data.append(`certificates_title_${index}`, cert.title);
-        data.append(`certificates_file_${index}`, cert.file);
+        data.append(`certificates[${index}][title]`, cert.title); // Use array notation for backend processing
+        data.append(`certificates[${index}][file]`, cert.file);
       }
     });
 
-    setLoading(true);
     try {
       const result = await registerUser(data);
-      setMessage(result.message || "Registration submission failed");
+      setMessage(result.message || "Registration successful!"); // Positive message on success
     } catch (error) {
-      setMessage("Error: " + error.message);
+      console.error("Registration error:", error);
+      setMessage("Error: " + (error.message || "An unexpected error occurred during registration."));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const sectionHeaderStyle = {
@@ -246,7 +266,7 @@ export default function JobSeekerReg() {
           disabled={loading}
           className="submit-button"
         >
-          {loading ? "Registering..." : "Register"}
+          {loading ? "Validating..." : "Register"}
         </button>
       </form>
 

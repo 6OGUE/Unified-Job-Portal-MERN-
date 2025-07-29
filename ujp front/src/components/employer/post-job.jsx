@@ -115,7 +115,7 @@ const PostJob = () => {
   const [hover, setHover] = React.useState(false);
 
   return (
-    <div style={{ minHeight: '110vh', backgroundColor: '#fff', paddingTop: '40px', paddingBottom: '40px' }}>
+    <div style={{ minHeight: '160vh', backgroundColor: '#fff', paddingTop: '40px', paddingBottom: '40px' }}>
       <form
         onSubmit={handleSubmit}
         style={formStyle}

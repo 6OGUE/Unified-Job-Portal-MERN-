@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/AuthContext'; // Make sure this path is correct
 
 const navLinkStyle = {
   textDecoration: 'none',
@@ -12,8 +12,12 @@ const navLinkStyle = {
   color: 'white',
 };
 
+const logoutButtonStyle = {
+  ...navLinkStyle,
+};
+
 function EmployeeNavbar() {
-  const { role, logout } = useContext(AuthContext);
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -31,22 +35,22 @@ function EmployeeNavbar() {
         alignItems: 'center',
         height: '60px',
         fontSize: '20px',
-        fontFamily: 'monospace',
+        fontFamily: 'monospace'
       }}
     >
-      <img src="/logo.png" height="80px" width="110px" alt="Logo" />
+      <Link to="/">
+        <img src="/logo.png" height="80px" width="110px" alt="Logo" />
+      </Link>
+      
       <div>
-        {role === 'employee' && (
-          <>
-            {/* Customize links as per employee */}
-            <Link to="/" style={navLinkStyle}>HOME</Link>
-            <Link to="/profile" style={navLinkStyle}>PROFILE</Link>
-            <Link to="/jobs" style={navLinkStyle}>JOBS</Link>
-          </>
-        )}
-        {role && (
-          <button onClick={handleLogout} style={navLinkStyle}>LOG OUT</button>
-        )}
+        <Link to="/employee-dashboard" style={navLinkStyle}>DASHBOARD</Link>
+        <Link to="/employee/profile" style={navLinkStyle}>PROFILE</Link>
+        <Link to="/employee/viewjobs" style={navLinkStyle}>JOBS</Link>
+        <Link to="/employee/appliedjobs" style={navLinkStyle}>HISTORY</Link>
+        
+        <button onClick={handleLogout} style={logoutButtonStyle}>
+          LOGOUT
+        </button>
       </div>
     </div>
   );
