@@ -39,7 +39,7 @@ function EmployerNavbar() {
         {role === 'employer' && (
           <>
             <Link to="/post-job" style={navLinkStyle}>POST JOB</Link>
-            <Link to="/myjobs" style={navLinkStyle}>MY JOBS</Link>
+            <Link to="/employer/my-jobs" style={navLinkStyle}>MY JOBS</Link> {/* Updated this line */}
           </>
         )}
         {role && (

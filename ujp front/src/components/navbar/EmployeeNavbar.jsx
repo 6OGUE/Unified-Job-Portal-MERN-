@@ -43,7 +43,7 @@ function EmployeeNavbar() {
       </Link>
       
       <div>
-        <Link to="/employee-dashboard" style={navLinkStyle}>DASHBOARD</Link>
+        
         <Link to="/employee/profile" style={navLinkStyle}>PROFILE</Link>
         <Link to="/employee/viewjobs" style={navLinkStyle}>JOBS</Link>
         <Link to="/employee/appliedjobs" style={navLinkStyle}>HISTORY</Link>
