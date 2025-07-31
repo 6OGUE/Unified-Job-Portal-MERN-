@@ -101,7 +101,7 @@ const EmployerJobsPage = () => {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '2rem', fontFamily: 'Inter, sans-serif' }}>
       <h1 style={{ fontSize: '2.25rem', fontWeight: '800', color: '#1f2937', marginBottom: '1.5rem', textAlign: 'center' }}>
-        My Posted Jobs
+        My Jobs
       </h1>
 
       {jobs.length === 0 ? (

@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Register from './components/Register';
 import Login from './components/Login';
 import NavbarWrapper from './components/navbar/NavbarWrapper';
-import Footer from './components/Footer';
 import Home from './components/Home';
 import Employeereg from './components/Employeereg';
 import Employerreg from './components/Employerreg';
@@ -43,8 +42,6 @@ function App() {
           <Route path="/post-job" element={<PostJob />} />
           <Route path="/employer/my-jobs" element={<MyJobs />} /> {/* Added this route */}
         </Routes>
-        {/* You might want to include Footer here if it's meant to be on all pages */}
-        {/* <Footer /> */}
       </BrowserRouter>
     </AuthProvider>
   );
