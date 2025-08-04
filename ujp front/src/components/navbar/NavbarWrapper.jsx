@@ -10,7 +10,7 @@ const NavbarWrapper = () => {
 
   if (role === 'admin') return <AdminNavbar />;
   if (role === 'employer') return <EmployerNavbar />;
-  if (role === 'employee') return <EmployeeNavbar />;
+  if (role === 'employee') return <EmployeeNavbar />; // This will render the EmployeeNavbar
   return <Navbar />; // fallback
 };
 

@@ -12,10 +12,11 @@ import AdminDashboard from './dashboard/AdminDashboard';
 import EmployeeView from './components/admin/EmployeeView';
 import EmployerView from './components/admin/EmployerView';
 import PostJob from './components/employer/post-job.jsx';
-import MyJobs from './components/employer/Myjobs.jsx'; // Added this import
+import MyJobs from './components/employer/Myjobs.jsx';
 
 import ViewProfile from './components/employee/ViewProfile';
 import EditProfile from './components/employee/EditProfile';
+import ViewJobs from './components/employee/ViewJobs.jsx'; // NEW: Import ViewJobs component
 
 import { AuthProvider } from './context/AuthContext';
 
@@ -35,12 +36,14 @@ function App() {
 
           <Route path="/employee/profile" element={<ViewProfile />} />
           <Route path="/employee/profile/edit" element={<EditProfile />} />
+          {/* NEW: Route for employees to view jobs */}
+          <Route path="/employee/viewjobs" element={<ViewJobs />} />
 
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/employees" element={<EmployeeView />} />
           <Route path="/admin/employers" element={<EmployerView />} />
           <Route path="/post-job" element={<PostJob />} />
-          <Route path="/employer/my-jobs" element={<MyJobs />} /> {/* Added this route */}
+          <Route path="/employer/my-jobs" element={<MyJobs />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

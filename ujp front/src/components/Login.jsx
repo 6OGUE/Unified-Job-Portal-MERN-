@@ -15,9 +15,6 @@ function Login() {
     setMessage('');
 
     try {
-      // Log what's being sent
-      console.log('Frontend: Sending login request with:', { email, password });
-
       const response = await fetch('http://localhost:5000/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -25,41 +22,29 @@ function Login() {
       });
 
       const data = await response.json();
-      // Log the full response received from the backend
-      console.log('Frontend: Received response data:', data);
 
       if (!response.ok) {
         setMessage(data.message || 'Login failed');
-        console.log('Frontend: Login failed according to response.ok:', data.message);
         return;
       }
 
-      // Save token and update context with role
-      localStorage.setItem('token', data.token);
-      login(data.user.role);
+      // Pass both the token and the role to the login function
+      login(data.token, data.user.role);
 
-      // Log the role extracted and compare it to expected values
       const userRole = data.user.role;
-      console.log('Frontend: Role extracted for redirection logic:', userRole);
 
-      // Redirect based on role
       if (userRole === 'employer') {
-        console.log('Frontend: Role is employer, navigating to /employer-dashboard');
         navigate('/employer-dashboard');
       } else if (userRole === 'employee' || userRole === 'job seeker') {
-        console.log('Frontend: Role is employee/job seeker, navigating to /employee-dashboard');
         navigate('/employee-dashboard');
       } else if (userRole === 'admin') {
-        console.log('Frontend: Role is admin, navigating to /admin/dashboard');
         navigate('/admin/dashboard');
       } else {
         setMessage('Unknown user role: ' + userRole);
-        console.log('Frontend: Unknown user role encountered:', userRole);
       }
 
     } catch (error) {
       setMessage('Error: ' + error.message);
-      console.error('Frontend: Error during login fetch:', error);
     }
   };
 
@@ -124,9 +109,9 @@ function Login() {
         </button>
         {message && <p style={{ marginTop: '10px', color: 'red', textAlign: 'center' }}>{message}</p>}
       </form>
-      
+
     </div>
-    
+
   );
 }
 

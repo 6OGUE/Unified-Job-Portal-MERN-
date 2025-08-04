@@ -41,13 +41,13 @@ function EmployeeNavbar() {
       <Link to="/">
         <img src="/logo.png" height="80px" width="110px" alt="Logo" />
       </Link>
-      
+
       <div>
-        
         <Link to="/employee/profile" style={navLinkStyle}>PROFILE</Link>
+        {/* This is the link to the ViewJobs component */}
         <Link to="/employee/viewjobs" style={navLinkStyle}>JOBS</Link>
         <Link to="/employee/appliedjobs" style={navLinkStyle}>HISTORY</Link>
-        
+
         <button onClick={handleLogout} style={logoutButtonStyle}>
           LOGOUT
         </button>

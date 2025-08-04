@@ -203,8 +203,8 @@ const EmployerJobsPage = () => {
               <p><strong>Company:</strong> {selectedJob.companyName}</p>
               <p><strong>Location:</strong> {selectedJob.location}</p>
               <p><strong>Salary:</strong> {selectedJob.salary}</p>
-              <p><strong>Qualification:</strong> {selectedJob.qualification}</p>
-              {selectedJob.additionalQualification && <p><strong>Additional Qualification:</strong> {selectedJob.additionalQualification}</p>}
+              <p><strong>Qualification:</strong> {selectedJob.education}</p>
+              <p><strong>Additional Qualification:</strong> {selectedJob.additionalQualification?.join(', ') || 'None'}</p>
               <p><strong>Description:</strong> {selectedJob.description}</p>
               <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
                 Posted on: {new Date(selectedJob.createdAt).toLocaleDateString()}

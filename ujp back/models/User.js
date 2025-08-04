@@ -35,7 +35,6 @@ const userSchema = new mongoose.Schema({
     type: [CertificateSchema],
     default: [],
   },
-  
 
   // Fields specific to 'employer' role
   companyName: { type: String, trim: true },
@@ -63,6 +62,7 @@ userSchema.pre('save', function (next) {
     this.education = undefined;
     this.cvFilePath = undefined;
     this.certificates = undefined;
+    this.skills = undefined; // Clear skills for employer
   } else if (this.role === 'employee') {
     this.companyName = undefined;
     this.location = undefined;

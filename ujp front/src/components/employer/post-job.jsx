@@ -7,7 +7,7 @@ const PostJob = () => {
     description: '',
     salary: '',
     location: '',
-    qualification: '',
+    education: '', // Changed from 'qualification' to 'education'
     additionalQualification: ''
   });
 
@@ -21,13 +21,22 @@ const PostJob = () => {
     const token = localStorage.getItem('token');
 
     try {
+      // Prepare the data to match the expected format
+      const jobData = {
+        ...formData,
+        education: [formData.education], // Convert to array as expected by the backend
+        additionalQualification: formData.additionalQualification 
+          ? formData.additionalQualification.split(',').map(qual => qual.trim()) 
+          : []
+      };
+
       const res = await fetch('/api/jobs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(jobData)
       });
 
       const text = await res.text();
@@ -44,7 +53,7 @@ const PostJob = () => {
           description: '',
           salary: '',
           location: '',
-          qualification: '',
+          education: '',
           additionalQualification: ''
         });
       } else {
@@ -114,6 +123,14 @@ const PostJob = () => {
 
   const [hover, setHover] = React.useState(false);
 
+  // Education levels matching the user schema
+  const educationLevels = [
+    { value: 'Matriculation', label: 'Matriculation' },
+    { value: 'Higher Secondary', label: 'Higher Secondary' },
+    { value: 'Graduation', label: 'Graduation' },
+    { value: 'Postgraduation', label: 'Postgraduation' }
+  ];
+
   return (
     <div style={{ minHeight: '160vh', backgroundColor: '#fff', paddingTop: '40px', paddingBottom: '40px' }}>
       <form
@@ -125,7 +142,7 @@ const PostJob = () => {
           fontSize: '32px',
           fontWeight: '700',
           marginBottom: '30px',
-          color: '#f8f8f8ff',
+          color: '#333',
           textAlign: 'center',
           fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
         }}>
@@ -142,6 +159,7 @@ const PostJob = () => {
           onFocus={e => e.target.style.borderColor = '#007bff'}
           onBlur={e => e.target.style.borderColor = '#ccc'}
         />
+        
         <input
           name="title"
           placeholder="Job Title"
@@ -152,6 +170,7 @@ const PostJob = () => {
           onFocus={e => e.target.style.borderColor = '#007bff'}
           onBlur={e => e.target.style.borderColor = '#ccc'}
         />
+        
         <textarea
           name="description"
           placeholder="Job Description"
@@ -162,9 +181,10 @@ const PostJob = () => {
           onFocus={e => e.target.style.borderColor = '#007bff'}
           onBlur={e => e.target.style.borderColor = '#ccc'}
         />
+        
         <input
           name="salary"
-          placeholder="Salary"
+          placeholder="Salary Range (e.g., $50,000 - $70,000)"
           value={formData.salary}
           onChange={handleChange}
           required
@@ -172,9 +192,10 @@ const PostJob = () => {
           onFocus={e => e.target.style.borderColor = '#007bff'}
           onBlur={e => e.target.style.borderColor = '#ccc'}
         />
+        
         <input
           name="location"
-          placeholder="Location"
+          placeholder="Job Location"
           value={formData.location}
           onChange={handleChange}
           required
@@ -184,44 +205,53 @@ const PostJob = () => {
         />
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={labelStyle}>Minimum Qualification:</label>
-          {['matriculation', 'higher secondary', 'graduation', 'post graduation'].map((q) => (
-            <label key={q} style={radioLabelStyle}>
+          <label style={labelStyle}>Minimum Education Required:</label>
+          <div style={{ marginBottom: '10px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '6px', fontSize: '14px', color: '#666' }}>
+            <strong>Note:</strong> Candidates with this education level or higher will be able to see and apply for this job.
+          </div>
+          {educationLevels.map((level) => (
+            <label key={level.value} style={radioLabelStyle}>
               <input
                 type="radio"
-                name="qualification"
-                value={q}
-                checked={formData.qualification === q}
+                name="education"
+                value={level.value}
+                checked={formData.education === level.value}
                 onChange={handleChange}
                 required
                 style={{ marginRight: '8px', cursor: 'pointer' }}
               />
-              {q.charAt(0).toUpperCase() + q.slice(1)}
+              {level.label}
             </label>
           ))}
         </div>
 
-        <input
-          name="additionalQualification"
-          placeholder="Additional Qualification (optional)"
-          value={formData.additionalQualification}
-          onChange={handleChange}
-          style={inputStyle}
-          onFocus={e => e.target.style.borderColor = '#007bff'}
-          onBlur={e => e.target.style.borderColor = '#ccc'}
-        />
+        <div style={{ marginBottom: '20px' }}>
+          <label style={labelStyle}>Additional Skills/Qualifications:</label>
+          <input
+            name="additionalQualification"
+            placeholder="e.g., JavaScript, React, Node.js (separate with commas)"
+            value={formData.additionalQualification}
+            onChange={handleChange}
+            style={inputStyle}
+            onFocus={e => e.target.style.borderColor = '#007bff'}
+            onBlur={e => e.target.style.borderColor = '#ccc'}
+          />
+          <div style={{ fontSize: '14px', color: '#666', marginTop: '-15px', marginBottom: '20px' }}>
+            Optional: List specific skills or additional qualifications (separated by commas)
+          </div>
+        </div>
 
         <div style={{ marginLeft: '0px' }}>
-  <button
-    type="submit"
-    style={
-      hover
-        ? { width: '700px', ...buttonStyle, ...buttonHoverStyle }
-        : { width: '700px', ...buttonStyle }
-    }
-    onMouseEnter={() => setHover(true)}
-    onMouseLeave={() => setHover(false)}
-  >
+          <button
+            type="submit"
+            style={
+              hover
+                ? { width: '700px', ...buttonStyle, ...buttonHoverStyle }
+                : { width: '700px', ...buttonStyle }
+            }
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+          >
             Post Job
           </button>
         </div>

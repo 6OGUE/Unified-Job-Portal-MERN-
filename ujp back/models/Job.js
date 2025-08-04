@@ -6,8 +6,8 @@ const jobSchema = new mongoose.Schema({
   description: { type: String, required: true },
   salary: { type: String, required: true },
   location: { type: String, required: true },
-  qualification: { type: String, required: true },
-  additionalQualification: { type: String, default: 'None' },
+  education: { type: [String], required: true }, // Changed 'qualification' to 'education'
+  additionalQualification: { type: [String], default: [] },
   postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   createdAt: { type: Date, default: Date.now }
 });
