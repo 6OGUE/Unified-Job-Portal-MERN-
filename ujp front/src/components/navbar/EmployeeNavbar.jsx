@@ -46,7 +46,7 @@ function EmployeeNavbar() {
         <Link to="/employee/profile" style={navLinkStyle}>PROFILE</Link>
         {/* This is the link to the ViewJobs component */}
         <Link to="/employee/viewjobs" style={navLinkStyle}>JOBS</Link>
-        <Link to="/employee/appliedjobs" style={navLinkStyle}>HISTORY</Link>
+        <Link to="/employee/applications" style={navLinkStyle}>HISTORY</Link>
 
         <button onClick={handleLogout} style={logoutButtonStyle}>
           LOGOUT

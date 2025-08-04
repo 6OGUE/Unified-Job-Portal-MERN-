@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }) => {
       setLoadingAuth(false);
       localStorage.removeItem('role');
     }
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   const login = (newToken, newRole) => {
     localStorage.setItem('token', newToken);
