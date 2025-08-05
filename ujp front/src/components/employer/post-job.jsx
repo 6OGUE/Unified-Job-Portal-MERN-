@@ -144,7 +144,7 @@ const PostJob = () => {
           marginBottom: '30px',
           color: '#333',
           textAlign: 'center',
-          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+          fontFamily: 'monospace',
         }}>
           Post Job
         </h1>

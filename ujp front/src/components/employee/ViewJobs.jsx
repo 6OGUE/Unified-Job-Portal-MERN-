@@ -156,7 +156,7 @@ function App() {
     <div style={{ minHeight: '100vh', backgroundColor: '#f7fafc', padding: '1rem 2rem', fontFamily: 'Inter, sans-serif' }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-      <h1 style={{ fontSize: '2.5rem', fontWeight: '700', color: '#1a202c', marginBottom: '2rem', textAlign: 'center', fontFamily: 'monospace' }}>
+      <h1 style={{ fontSize: '2.5rem', fontWeight: '200', color: '#1a202c', marginBottom: '2rem', textAlign: 'center' ,fontFamily:'monospace'}}>
         Jobs For You
       </h1>
 
