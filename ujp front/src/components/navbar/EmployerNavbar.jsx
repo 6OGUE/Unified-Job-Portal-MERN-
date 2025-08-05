@@ -36,8 +36,9 @@ function EmployerNavbar() {
         >
             <img src="/logo.png" height="80px" width="110px" alt="Logo" />
             <div>
+                
                 {role === 'employer' && (
-                    <>
+                    <>  <Link to="/home" style={navLinkStyle}>HOME</Link>
                         <Link to="/post-job" style={navLinkStyle}>POST JOB</Link>
                         <Link to="/employer/my-jobs" style={navLinkStyle}>MY JOBS</Link>
                         {/* NEW: Link to All Applications Table */}

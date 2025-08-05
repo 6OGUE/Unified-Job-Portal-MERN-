@@ -20,10 +20,16 @@ import ViewJobs from './components/employee/ViewJobs.jsx';
 import AllApplicationsTable from './components/employer/AllApplicationsTable.jsx';
 import UserProfile from './components/employer/UserProfile.jsx'; // Corrected import path based on your previous save location
 
+import { AuthContext } from './context/AuthContext';
+
 import { AuthProvider } from './context/AuthContext';
 import ApplicationHistory from './components/employee/history';
+import { useContext } from 'react'; // for using AuthContext
+import { Navigate } from 'react-router-dom'; // for conditional redirect
+import RoleBasedHome from './components/RoleBasedHome';
 
 function App() {
+    const { role } = useContext(AuthContext);
     return (
         <AuthProvider>
             <BrowserRouter>
@@ -53,6 +59,8 @@ function App() {
                     {/* Route for viewing any user's profile by ID */}
                     <Route path="/user/:id" element={<UserProfile />} />
                     <Route path="/employee/applications" element={<ApplicationHistory />} />
+                    <Route path="/home" element={<RoleBasedHome />} />
+
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

@@ -38,11 +38,12 @@ function EmployeeNavbar() {
         fontFamily: 'monospace'
       }}
     >
-      <Link to="/">
+      
         <img src="/logo.png" height="80px" width="110px" alt="Logo" />
-      </Link>
+      
 
       <div>
+        <Link to="/home" style={navLinkStyle}>HOME</Link>
         <Link to="/employee/profile" style={navLinkStyle}>PROFILE</Link>
         {/* This is the link to the ViewJobs component */}
         <Link to="/employee/viewjobs" style={navLinkStyle}>JOBS</Link>

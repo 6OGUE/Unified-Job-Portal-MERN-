@@ -208,7 +208,7 @@ const ApplicationHistory = () => {
               <th style={thStyle}>Job Title</th>
               <th style={thStyle}>Company</th>
               <th style={thStyle}>Applied On</th>
-              <th style={thStyle}>Actions</th> {/* New column for delete button */}
+              <th style={thStyle}>Actions</th>
             </tr>
           </thead>
           <tbody>
