@@ -1,15 +1,14 @@
 import mongoose from 'mongoose';
 
-// Define the schema for the Application2 model
 const applicationSchema = new mongoose.Schema({
     jobId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Job', // Reference to the Job model
+        ref: 'Job',
         required: true,
     },
     employeeId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference to the User model (employee)
+        ref: 'User',
         required: true,
     },
     jobTitle: {
@@ -21,20 +20,20 @@ const applicationSchema = new mongoose.Schema({
         required: true,
     },
     employeeName: {
-        type: String, // Storing the employee's name directly for easier display
+        type: String,
         required: true,
     },
     applicationDate: {
         type: Date,
         default: Date.now,
     },
-    // You can add more fields here, e.g., resume path, cover letter path, etc.
-}, { timestamps: true }); // `timestamps: true` adds createdAt and updatedAt fields automatically
+    status: {
+      type: String,
+      enum: ['Pending', 'Accepted', 'Rejected'],
+      default: 'Pending',
+    },
+}, { timestamps: true });
 
-// Add this compound unique index to prevent duplicate applications
-// This index will ensure that an employee can only apply for a specific job once in this collection.
 applicationSchema.index({ jobId: 1, employeeId: 1 }, { unique: true });
 
-// Export the Mongoose model for 'Application2' using the defined schema.
-// It's crucial that the model name here ('Application2') matches the import name in your routes.
 export default mongoose.model('Application2', applicationSchema);

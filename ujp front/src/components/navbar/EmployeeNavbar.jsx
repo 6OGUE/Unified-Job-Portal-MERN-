@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // Make sure this path is correct
+import { useAuth } from '../../context/AuthContext';
 
 const navLinkStyle = {
   textDecoration: 'none',
@@ -41,13 +41,11 @@ function EmployeeNavbar() {
       
         <img src="/logo.png" height="80px" width="110px" alt="Logo" />
       
-
       <div>
         <Link to="/home" style={navLinkStyle}>HOME</Link>
         <Link to="/employee/profile" style={navLinkStyle}>PROFILE</Link>
-        {/* This is the link to the ViewJobs component */}
         <Link to="/employee/viewjobs" style={navLinkStyle}>JOBS</Link>
-        <Link to="/employee/applications" style={navLinkStyle}>HISTORY</Link>
+        <Link to="/employee/applications" style={navLinkStyle}>MY APPLICATIONS</Link>
 
         <button onClick={handleLogout} style={logoutButtonStyle}>
           LOGOUT

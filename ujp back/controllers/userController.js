@@ -16,7 +16,8 @@ const performSmartVerification = async (fileBuffer, nameToVerify) => {
     const pdfText = pdfData.text;
     if (!pdfText || pdfText.trim() === '') throw new Error('Could not extract text from the document for verification.');
     const normalizeText = (text) => text.toLowerCase().replace(/[^a-z0-9\s]/gi, ' ').replace(/\s+/g, ' ').trim();
-    const normalizedPdfText = normalizeText(pdfText), normalizedNameToVerify = normalizeText(nameToVerify);
+    const normalizedPdfText = normalizeText(pdfText);
+    const normalizedNameToVerify = normalizeText(nameToVerify);
     if (!normalizedNameToVerify) throw new Error('Name to verify is empty.');
     return normalizedPdfText.includes(normalizedNameToVerify);
 };
@@ -43,7 +44,6 @@ async function registerEmployer(req, res) {
         await user.save();
         res.status(201).json({ message: 'Employer registered successfully.' });
     } catch (error) {
-        console.error("Employer Registration Error:", error);
         res.status(500).json({ message: error.message || 'Server error during employer registration.' });
     } finally { cleanupFile(certificateFile); }
 }
@@ -73,7 +73,6 @@ async function registerJobSeeker(req, res) {
         await user.save();
         res.status(201).json({ message: 'Employee registered successfully.' });
     } catch (error) {
-        console.error("Employee Registration Error:", error);
         cleanupFiles();
         res.status(500).json({ message: error.message || 'Server error during employee registration.' });
     }
@@ -99,7 +98,6 @@ export const loginUser = async (req, res) => {
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
         res.json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
     } catch (error) {
-        console.error("Login Error:", error);
         res.status(500).json({ message: 'Server error during login.' });
     }
 };
@@ -111,7 +109,6 @@ export const getProfile = async (req, res) => {
         if (!user) return res.status(404).json({ message: 'User not found.' });
         res.json(user);
     } catch (err) {
-        console.error("Error fetching profile:", err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -125,7 +122,6 @@ export const updateQualification = async (req, res) => {
         if (!user) return res.status(404).json({ message: 'User not found.' });
         res.json({ success: true, education: user.education });
     } catch (err) {
-        console.error("Error updating qualification:", err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -139,7 +135,6 @@ export const updateAboutMe = async (req, res) => {
         if (!user) return res.status(404).json({ message: 'User not found.' });
         res.json({ success: true, about: user.about });
     } catch (err) {
-        console.error("Error updating about me:", err);
         res.status(500).json({ message: 'Server error while updating about me.' });
     }
 };
@@ -164,7 +159,6 @@ export const uploadCV = async (req, res) => {
         res.json({ success: true, cvFilePath: user.cvFilePath });
     } catch (err) {
         cleanupFile();
-        console.error("Error uploading CV:", err);
         res.status(500).json({ message: err.message || 'Error uploading CV.' });
     }
 };
@@ -192,7 +186,6 @@ export const addCertificates = async (req, res) => {
         res.json({ success: true, certificates: user.certificates });
     } catch (err) {
         cleanupFiles();
-        console.error("Error adding certificates:", err);
         res.status(500).json({ message: err.message || 'Server error while adding certificates.' });
     }
 };
@@ -211,7 +204,6 @@ export const deleteCV = async (req, res) => {
         }
         res.json({ success: true, message: 'CV deleted successfully.' });
     } catch (err) {
-        console.error("Error deleting CV:", err);
         res.status(500).json({ message: 'Error deleting CV.' });
     }
 };
@@ -232,7 +224,18 @@ export const deleteCertificate = async (req, res) => {
         await user.save();
         res.json({ success: true, message: 'Certificate deleted successfully.', certificates: user.certificates });
     } catch (err) {
-        console.error("Error deleting certificate:", err);
         res.status(500).json({ message: 'Server error.' });
+    }
+};
+
+export const getProfileById = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error while fetching user profile.' });
     }
 };

@@ -1,174 +1,133 @@
 import express from 'express';
-import Application from '../models/Application.js'; // Main application table (for employers)
-import Application2 from '../models/Application2.js'; // Employee's application history table
-import Job from '../models/Job.js'; // Required for employer authorization checks (e.g., when posting jobs)
+import Application from '../models/Application.js';
+import Application2 from '../models/Application2.js';
+import Job from '../models/Job.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// @desc    Submit a new job application
-// @route   POST /api/applications
-// @access  Private (Employee only)
+// This route remains unchanged
 router.post('/', protect, async (req, res) => {
     try {
-        // Ensure only employees can submit applications
-        if (req.user.role !== 'employee') {
-            return res.status(403).json({ message: 'Only employees can submit applications.' });
-        }
-
+        if (req.user.role !== 'employee') { return res.status(403).json({ message: 'Only employees can submit applications.' }); }
         const { jobId, jobTitle, companyName } = req.body;
-
         const employeeId = req.user._id;
         const employeeName = req.user.name;
-
-        // Basic validation for required fields
-        if (!jobId || !jobTitle || !companyName || !employeeId || !employeeName) {
-            return res.status(400).json({ message: 'Missing required application fields.' });
-        }
-
-        // Prepare the application data
-        const applicationData = {
-            jobId,
-            employeeId,
-            jobTitle,
-            companyName,
-            employeeName,
-        };
-
-        // --- Insert into BOTH Application and Application2 ---
-        // Create and save a new application instance to the 'applications' table (for employers to view)
+        if (!jobId || !jobTitle || !companyName || !employeeId || !employeeName) { return res.status(400).json({ message: 'Missing required application fields.' }); }
+        const applicationData = { jobId, employeeId, jobTitle, companyName, employeeName };
         const newApplication = new Application(applicationData);
         await newApplication.save();
-
-        // Create and save the same application data to the 'application2' table (for employee history)
         const newApplication2 = new Application2(applicationData);
         await newApplication2.save();
-        // --- End Dual Insert ---
-
-        res.status(201).json({
-            message: 'Application submitted successfully to both tables!',
-            application: newApplication,
-            application2: newApplication2 // Optionally return the second application as well
-        });
-
+        res.status(201).json({ message: 'Application submitted successfully!', application: newApplication });
     } catch (error) {
-        // Handle duplicate application error (MongoDB unique index error code 11000)
-        if (error.code === 11000) {
-            return res.status(409).json({ message: 'You have already applied for this job.' });
-        }
-        // Generic server error
-        console.error('Error submitting application to one or both tables:', error);
+        if (error.code === 11000) { return res.status(409).json({ message: 'You have already applied for this job.' }); }
         res.status(500).json({ message: 'Server error while submitting application.' });
     }
 });
 
-// @desc    Get applications for the authenticated employee (from Application2)
-// @route   GET /api/applications/my-applications
-// @access  Private (Employee only)
+// Specific routes must come BEFORE wildcard routes like /:id
 router.get('/my-applications', protect, async (req, res) => {
     try {
-        if (req.user.role !== 'employee') {
-            return res.status(403).json({ message: 'Only employees can view their applications.' });
-        }
-        const employeeId = req.user._id;
-        // Employees view their applications from Application2
-        const applications = await Application2.find({ employeeId }).populate('jobId', 'title companyName location');
+        if (req.user.role !== 'employee') { return res.status(403).json({ message: 'Only employees can view their applications.' }); }
+        const applications = await Application2.find({ employeeId: req.user._id }).populate('jobId', 'title companyName location');
         res.status(200).json(applications);
     } catch (error) {
-        console.error('Error fetching employee applications from Application2:', error);
         res.status(500).json({ message: 'Server error while fetching your applications.' });
     }
 });
 
-// @desc    Get all applications (for employers, from Application)
-// @route   GET /api/applications/all
-// @access  Private (Employer only)
 router.get('/all', protect, async (req, res) => {
     try {
-        // Ensure only employers can view all applications
-        if (req.user.role !== 'employer') {
-            return res.status(403).json({ message: 'Only employers can view all applications.' });
-        }
-
-        // Employers view all applications from the main Application table
-        const applications = await Application.find({}) // Corrected to fetch from Application
+        if (req.user.role !== 'employer') { return res.status(403).json({ message: 'Only employers can view applications.' }); }
+        const employerJobs = await Job.find({ postedBy: req.user._id }).select('_id');
+        const jobIds = employerJobs.map(job => job._id);
+        const applications = await Application.find({ jobId: { $in: jobIds } })
             .populate('employeeId', 'name email education skills')
             .populate('jobId', 'title companyName location');
-
         res.status(200).json(applications);
     } catch (error) {
-        console.error('Error fetching all applications:', error);
         res.status(500).json({ message: 'Server error while fetching all applications.' });
     }
 });
 
-// @desc    Get applications for a specific job (for employers, from Application)
-// @route   GET /api/applications/job/:jobId
-// @access  Private (Employer only, for their own jobs)
-router.get('/job/:jobId', protect, async (req, res) => {
+router.put('/status', protect, async (req, res) => {
     try {
-        // Ensure only employers can view applications for their jobs
-        if (req.user.role !== 'employer') {
-            return res.status(403).json({ message: 'Only employers can view applications for their jobs.' });
+        if (req.user.role !== 'employer') { return res.status(403).json({ message: 'Only employers can update status.' }); }
+        const { applicationId, status } = req.body;
+        if (!applicationId || !status || !['Accepted', 'Rejected'].includes(status)) {
+            return res.status(400).json({ message: 'Application ID and a valid status are required.' });
         }
-        const { jobId } = req.params;
-        // In a real application, you would also verify that the job belongs to the authenticated employer.
-        // const job = await Job.findById(jobId);
-        // if (!job || job.postedBy.toString() !== req.user._id.toString()) {
-        //   return res.status(403).json({ message: 'Not authorized to view applications for this job.' });
-        // }
-
-        // Employers view job-specific applications from the main Application table
-        const applications = await Application.find({ jobId }).populate('employeeId', 'name email education skills');
-        res.status(200).json(applications);
+        const mainApplication = await Application.findById(applicationId).populate('jobId');
+        if (!mainApplication) { return res.status(404).json({ message: 'Application not found.' }); }
+        if (!mainApplication.jobId || mainApplication.jobId.postedBy.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'You are not authorized to update this application.' });
+        }
+        mainApplication.status = status;
+        const secondaryApplication = await Application2.findOne({ jobId: mainApplication.jobId._id, employeeId: mainApplication.employeeId });
+        if (secondaryApplication) {
+            secondaryApplication.status = status;
+            await secondaryApplication.save();
+        }
+        await mainApplication.save();
+        res.status(200).json({ message: `Application has been ${status.toLowerCase()}.` });
     } catch (error) {
-        console.error('Error fetching job-specific applications:', error);
-        res.status(500).json({ message: 'Server error while fetching job applications.' });
+        res.status(500).json({ message: 'Server error while updating status.' });
     }
 });
 
+// Wildcard route /:id must be LAST
+router.get('/:id', protect, async (req, res) => {
+    try {
+        const application = await Application.findById(req.params.id);
+        if (!application) {
+            return res.status(404).json({ message: 'Application not found.' });
+        }
+        res.status(200).json(application);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error while fetching application.' });
+    }
+});
 
-// @desc    Delete an application by ID (Role-based deletion)
-// @route   DELETE /api/applications/:id
-// @access  Private (Employee for their own from Application2, Employer for their job's from Application)
+// THIS IS THE FINAL, CORRECTED DELETE ROUTE
 router.delete('/:id', protect, async (req, res) => {
     try {
         const applicationId = req.params.id;
-        const userId = req.user._id; // The ID of the logged-in user (employee or employer)
-        const userRole = req.user.role; // The role of the logged-in user
+        const user = req.user;
 
-        if (userRole === 'employee') {
-            // Employee wants to delete their own application from Application2 table
-            const application = await Application2.findOneAndDelete({ _id: applicationId, employeeId: userId });
-
-            if (!application) {
-                return res.status(404).json({ message: 'Application not found in your history or you are not authorized to delete it.' });
-            }
-            res.status(200).json({ message: 'Application deleted successfully from your history.' });
-
-        } else if (userRole === 'employer') {
-            // Employer wants to delete an application from the main Application table
-            // IMPORTANT SECURITY NOTE: This assumes the frontend only sends application IDs
-            // for jobs that the authenticated employer has posted. For robust security,
-            // you should re-implement the check to ensure the employer owns the job
-            // associated with this application.
-            // Example:
-            // const applicationToDelete = await Application.findById(applicationId).populate('jobId');
-            // if (!applicationToDelete || !applicationToDelete.jobId || applicationToDelete.jobId.postedBy.toString() !== userId.toString()) {
-            //     return res.status(403).json({ message: 'Not authorized to delete this application.' });
-            // }
-
-            const deletedApplication = await Application.findByIdAndDelete(applicationId);
-
-            if (!deletedApplication) {
-                return res.status(404).json({ message: 'Application not found in the main list.' });
-            }
-            res.status(200).json({ message: 'Application deleted successfully from the main applications list.' });
-
-        } else {
-            // Handle other roles or unauthorized access
-            return res.status(403).json({ message: 'You are not authorized to perform this action.' });
+        let applicationToDelete;
+        if (user.role === 'employer') {
+            applicationToDelete = await Application.findById(applicationId);
+        } else { // employee
+            applicationToDelete = await Application2.findById(applicationId);
         }
+
+        if (!applicationToDelete) {
+            return res.status(404).json({ message: 'Application not found.' });
+        }
+
+        // We need the job to check for employer ownership
+        const parentJob = await Job.findById(applicationToDelete.jobId);
+
+        const isEmployeeOwner = user.role === 'employee' && applicationToDelete.employeeId.toString() === user._id.toString();
+        // The employer can only delete if the job still exists and belongs to them
+        const isEmployerOwner = user.role === 'employer' && parentJob && parentJob.postedBy.toString() === user._id.toString();
+
+        if (!isEmployeeOwner && !isEmployerOwner) {
+            return res.status(403).json({ message: 'You are not authorized to delete this application.' });
+        }
+
+        // Use the information from the found application to delete from both collections
+        await Application.deleteOne({ 
+            jobId: applicationToDelete.jobId, 
+            employeeId: applicationToDelete.employeeId 
+        });
+        await Application2.deleteOne({ 
+            jobId: applicationToDelete.jobId, 
+            employeeId: applicationToDelete.employeeId 
+        });
+
+        res.status(200).json({ message: 'Application successfully deleted from all records.' });
 
     } catch (error) {
         console.error('Error deleting application:', error);

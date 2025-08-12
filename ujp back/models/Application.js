@@ -3,12 +3,12 @@ import mongoose from 'mongoose';
 const applicationSchema = new mongoose.Schema({
   jobId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Job', // Reference to the Job model
+    ref: 'Job',
     required: true,
   },
   employeeId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model (employee)
+    ref: 'User',
     required: true,
   },
   jobTitle: {
@@ -20,18 +20,20 @@ const applicationSchema = new mongoose.Schema({
     required: true,
   },
   employeeName: {
-    type: String, // Storing the employee's name directly for easier display
+    type: String,
     required: true,
   },
   applicationDate: {
     type: Date,
     default: Date.now,
   },
-  
-  // You can add more fields here, e.g., resume path, cover letter path, etc.
-}, { timestamps: true }); // `timestamps: true` adds createdAt and updatedAt fields automatically
+  status: {
+    type: String,
+    enum: ['Pending', 'Accepted', 'Rejected'],
+    default: 'Pending',
+  },
+}, { timestamps: true });
 
-// Add this compound unique index to prevent duplicate applications
 applicationSchema.index({ jobId: 1, employeeId: 1 }, { unique: true });
 
 export default mongoose.model('Application', applicationSchema);
