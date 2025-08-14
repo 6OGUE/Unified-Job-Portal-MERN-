@@ -4,21 +4,21 @@ Unified Job Portal is a modern, full-stack job management platform built using t
 
 🚀 Features
 
->> Role-Based Access Control: Separate dashboards and functionalities for Employees, Employers, and Admins.
+✅ Role-Based Access Control: Separate dashboards and functionalities for Employees, Employers, and Admins.
 
->> Dynamic Job Posting: Employers can post jobs with details like title, description, location, salary, education requirements, and certifications.
+✅ Dynamic Job Posting: Employers can post jobs with details like title, description, location, salary, education requirements, and certifications.
 
->> Employee Profile Management: Job seekers can update personal info, upload CVs, and manage certificates dynamically.
+✅ Employee Profile Management: Job seekers can update personal info, upload CVs, and manage certificates dynamically.
 
->> Document Verification: Basic verification system for CVs and uploaded certificates to ensure authenticity.
+✅ Document Verification: Basic verification system for CVs and uploaded certificates to ensure authenticity.
 
->> Secure Authentication: JWT-based login and protected routes for enhanced security.
+✅ Secure Authentication: JWT-based login and protected routes for enhanced security.
 
->> File Uploads: CVs and certificates handled via Multer, stored efficiently with backend integration.
+✅ File Uploads: CVs and certificates handled via Multer, stored efficiently with backend integration.
 
->> Admin Controls: Admin can manage all users, view, and remove employees or employers.
+✅ Admin Controls: Admin can manage all users, view, and remove employees or employers.
 
->> Modern UI/UX: Responsive design with clean navigation, dynamic forms, and real-time updates.
+✅ Modern UI/UX: Responsive design with clean navigation, dynamic forms, and real-time updates.
 
 💻 Tech Stack
 
