@@ -16,7 +16,7 @@ const AllApplicationsTable = () => {
     const commonBorderRadius = '0.5rem';
     const commonBoxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
     const containerStyle = { padding: commonPadding, maxWidth: '80rem', margin: commonMargin, backgroundColor: commonBgColor, borderRadius: commonBorderRadius, boxShadow: commonBoxShadow };
-    const headingStyle = { fontSize: '2rem', fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'center', color: '#1f2937' };
+    const headingStyle = { fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'center', color: '#1f2937',fontFamily:'monospace' };
     const tableWrapperStyle = { overflowX: 'auto', borderRadius: commonBorderRadius, boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' };
     const tableStyle = { minWidth: '100%', borderCollapse: 'collapse', backgroundColor: '#f9fafb' };
     const tableHeaderStyle = { backgroundColor: '#eef2ff' };
@@ -72,76 +72,100 @@ const AllApplicationsTable = () => {
     };
 
     const handleDeleteApplication = async (appId, employeeName, jobTitle) => {
-        setMessage('');
-        if (!window.confirm(`Are you sure you want to delete the application by ${employeeName} for "${jobTitle}"?`)) {
-            return;
+    setMessage('');
+    if (!window.confirm(`Are you sure you want to delete the application by ${employeeName} for "${jobTitle}"?`)) {
+        return;
+    }
+    try {
+        const response = await fetch(`/api/applications/${appId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to delete application.');
         }
-        try {
-            const response = await fetch(`/api/applications/${appId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to delete application.');
-            }
-            setApplications(prevApps => prevApps.filter(app => app._id !== appId));
-            setMessage(`Application by ${employeeName} for "${jobTitle}" deleted successfully!`);
-        } catch (err) {
-            setMessage(`Failed to delete application: ${err.message}`);
-            setError(err.message);
-        }
-    };
+        setApplications(prevApps => prevApps.filter(app => app._id !== appId));
+        setMessage(`Application by ${employeeName} for "${jobTitle}" deleted successfully!`);
+    } catch (err) {
+        setMessage(`Failed to delete application: ${err.message}`);
+        setError(err.message);
+    }
+};
 
     if (loading || loadingAuth) return <div style={loadingErrorContainerStyle}><div style={loadingErrorContentStyle}>Loading applications...</div></div>;
     if (error && !message) return <div style={{ ...loadingErrorContainerStyle, backgroundColor: '#fef2f2' }}><div style={errorBoxStyle}><p style={{ fontSize: '1.25rem', fontWeight: '600' }}>Error:</p><p>{error}</p></div></div>;
     if (role !== 'employer') return <div style={loadingErrorContainerStyle}><div style={errorBoxStyle}><p style={{ fontSize: '1.25rem', fontWeight: '600' }}>Authorization Error:</p><p>You are not authorized to view this page.</p></div></div>;
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '2rem', fontFamily: 'Inter, sans-serif' }}>
-            <h1 style={headingStyle}>Job Applications</h1>
-            {message && (<div style={{ ...messageStyle, ...(error ? errorMessageStyle : successMessageStyle) }}>{message}</div>)}
-            {applications.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '2.5rem 0', color: '#4b5563', fontSize: '1.125rem' }}>
-                    <p>No applications found yet.</p>
-                </div>
-            ) : (
-                <div style={containerStyle}>
-                    <div style={tableWrapperStyle}>
-                        <table style={tableStyle}>
-                            <thead style={tableHeaderStyle}>
-                                <tr>
-                                    <th style={thStyle}>Applicant Name</th>
-                                    <th style={thStyle}>Job Title</th>
-                                    <th style={thStyle}>Company</th>
-                                    <th style={thStyle}>Application Date</th>
-                                    <th style={thStyle}>Status</th>
-                                    <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6', padding: '2rem', fontFamily: 'Inter, sans-serif' }}>
+        <h1 style={headingStyle}>Job Applications</h1>
+
+        {message && (
+            <div style={{ ...messageStyle, ...(error ? errorMessageStyle : successMessageStyle) }}>
+                {message}
+            </div>
+        )}
+
+        {applications.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2.5rem 0', color: '#4b5563', fontSize: '1.125rem' }}>
+                <img 
+                    src="/empty.png" 
+                    alt="No applications" 
+                    style={{ width: '150px', marginBottom: '1rem', opacity: 0.7 }} 
+                />
+                <p>No applications found yet.</p>
+            </div>
+        ) : (
+            <div style={containerStyle}>
+                <div style={tableWrapperStyle}>
+                    <table style={tableStyle}>
+                        <thead style={tableHeaderStyle}>
+                            <tr>
+                                <th style={thStyle}>Applicant Name</th>
+                                <th style={thStyle}>Job Title</th>
+                                <th style={thStyle}>Company</th>
+                                <th style={thStyle}>Application Date</th>
+                                <th style={thStyle}>Status</th>
+                                <th style={{ ...thStyle, textAlign: 'center' }}>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody style={{ backgroundColor: '#fff' }}>
+                            {applications.map((app) => (
+                                <tr key={app._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                                    <td style={tdStyle}>{app.employeeId ? app.employeeId.name : app.employeeName}</td>
+                                    <td style={tdStyle}>{app.jobId ? app.jobId.title : app.jobTitle}</td>
+                                    <td style={tdStyle}>{app.jobId ? app.jobId.companyName : app.companyName}</td>
+                                    <td style={tdStyle}>{new Date(app.applicationDate).toLocaleDateString()}</td>
+                                    <td style={tdStyle}>
+                                        <span style={statusPillStyle(app.status)}>{app.status}</span>
+                                    </td>
+                                    <td style={{ ...tdStyle, textAlign: 'center' }}>
+                                        {app.employeeId && (
+                                            <button 
+                                                onClick={() => handleViewProfile(app.employeeId._id, app._id)} 
+                                                style={viewProfileButtonStyle}
+                                            >
+                                                View Profile
+                                            </button>
+                                        )}
+                                        <button 
+                                            style={deleteButtonStyle} 
+                                            onClick={() => handleDeleteApplication(app._id, app.employeeId?.name, app.jobId?.title)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody style={{ backgroundColor: '#fff' }}>
-                                {applications.map((app) => (
-                                    <tr key={app._id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                                        <td style={tdStyle}>{app.employeeId ? app.employeeId.name : app.employeeName}</td>
-                                        <td style={tdStyle}>{app.jobId ? app.jobId.title : app.jobTitle}</td>
-                                        <td style={tdStyle}>{app.jobId ? app.jobId.companyName : app.companyName}</td>
-                                        <td style={tdStyle}>{new Date(app.applicationDate).toLocaleDateString()}</td>
-                                        <td style={tdStyle}><span style={statusPillStyle(app.status)}>{app.status}</span></td>
-                                        <td style={{ ...tdStyle, textAlign: 'center' }}>
-                                            {app.employeeId && (
-                                                <button onClick={() => handleViewProfile(app.employeeId._id, app._id)} style={viewProfileButtonStyle}>View Profile</button>
-                                            )}
-                                            <button style={deleteButtonStyle} onClick={() => handleDeleteApplication(app._id, app.employeeId?.name, app.jobId?.title)}>Delete</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-            )}
-        </div>
-    );
+            </div>
+        )}
+    </div>
+);
+
 };
 
 export default AllApplicationsTable;

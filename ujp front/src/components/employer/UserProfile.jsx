@@ -97,8 +97,8 @@ const UserProfile = () => {
             {userProfile.role === 'employee' && (
                 <>
                     <div style={styles.section}><h2 style={styles.sectionTitle}>Academic Details</h2><div style={styles.infoGrid}>
-                        {userProfile.education && (<div style={styles.infoItem}><span style={styles.infoLabel}>Highest Qualification</span>{userProfile.education}</div>)}
-                        {userProfile.cvFilePath && (<div style={styles.infoItem}><span style={styles.infoLabel}>CV</span><a href={userProfile.cvFilePath} target="_blank" rel="noopener noreferrer" style={styles.fileLink}>View CV</a></div>)}
+                        {userProfile.education && (<div style={styles.infoItem}><span style={styles.infoLabel}>Highest Qualificatison</span>{userProfile.education}</div>)}
+                        {userProfile.cvFilePath && (<div style={styles.infoItem}><span style={styles.infoLabel}>Resume</span><a href={userProfile.cvFilePath} target="_blank" rel="noopener noreferrer" style={styles.fileLink}>View Resume</a></div>)}
                     </div></div>
                     {userProfile.certificates && userProfile.certificates.length > 0 && (<div style={styles.section}><h2 style={styles.sectionTitle}>Certificates</h2><ul style={styles.certificateList}>
                         {userProfile.certificates.map((cert) => (<li key={cert._id} style={styles.certificateItem}><span style={styles.infoLabel}>{cert.title}</span>{cert.filePath && (<a href={cert.filePath} target="_blank" rel="noopener noreferrer" style={styles.fileLink}>View Certificate</a>)}</li>))}

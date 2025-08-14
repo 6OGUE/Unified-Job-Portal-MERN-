@@ -215,7 +215,7 @@ export default function JobSeekerReg() {
           ))}
         </div>
 
-        <h3 style={sectionHeaderStyle}>CV Upload</h3>
+        <h3 style={sectionHeaderStyle}>Resume Upload</h3>
         <input
           type="file"
           name="cv"

@@ -82,22 +82,46 @@ export const getEmployerJobs = async (req, res) => {
   }
 };
 
+
+
 export const deleteJob = async (req, res) => {
   try {
     const job = await Job.findById(req.params.id);
     if (!job) {
       return res.status(404).json({ message: 'Job not found' });
     }
+
     const employerId = req.user.id || req.user._id;
     if (job.postedBy.toString() !== employerId.toString()) {
       return res.status(401).json({ message: 'Not authorized to delete this job' });
     }
+
+    const jobTitle = job.title;
+
+    // 1. Delete applications from the 'Application' collection
+    await Application.deleteMany({ job: req.params.id });
+
+    // 2. Update status to 'Rejected' in the 'Application2' collection
+    await Application2.updateMany(
+      { jobTitle: jobTitle },
+      { status: 'Rejected' }
+    );
+
+    // Delete the job entry
     await job.deleteOne();
-    res.status(200).json({ message: 'Job deleted successfully' });
+
+    res.status(200).json({
+      message: 'Job deleted successfully. Applications from "Application" deleted and applications from "Application2" status updated to rejected.'
+    });
+
   } catch (error) {
+    console.error('Error deleting job:', error);
     res.status(500).json({ message: 'Server error while deleting job' });
   }
 };
+
+
+
 
 export const updateApplicationStatus = async (req, res) => {
     const { applicationId, status } = req.body;

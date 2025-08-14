@@ -21,7 +21,7 @@ router.post('/', protect, async (req, res) => {
         await newApplication2.save();
         res.status(201).json({ message: 'Application submitted successfully!', application: newApplication });
     } catch (error) {
-        if (error.code === 11000) { return res.status(409).json({ message: 'You have already applied for this job.' }); }
+        if (error.code === 11000) { return res.status(409).json({ message: 'You have already applied for this job and the application for this job already exists with the employer.' }); }
         res.status(500).json({ message: 'Server error while submitting application.' });
     }
 });
@@ -117,15 +117,26 @@ router.delete('/:id', protect, async (req, res) => {
             return res.status(403).json({ message: 'You are not authorized to delete this application.' });
         }
 
-        // Use the information from the found application to delete from both collections
-        await Application.deleteOne({ 
-            jobId: applicationToDelete.jobId, 
-            employeeId: applicationToDelete.employeeId 
-        });
-        await Application2.deleteOne({ 
-            jobId: applicationToDelete.jobId, 
-            employeeId: applicationToDelete.employeeId 
-        });
+        // NEW: Check if employer is trying to delete a Pending application
+        if (user.role === 'employer' && applicationToDelete.status === 'Pending') {
+            return res.status(400).json({ 
+                message: 'Cannot delete application with Pending status. Please change the status first.' 
+            });
+        }
+
+        // --- MODIFIED LOGIC HERE ---
+        if (user.role === 'employer') {
+            await Application.deleteOne({
+                jobId: applicationToDelete.jobId,
+                employeeId: applicationToDelete.employeeId
+            });
+        } else if (user.role === 'employee') {
+            await Application2.deleteOne({
+                jobId: applicationToDelete.jobId,
+                employeeId: applicationToDelete.employeeId
+            });
+        }
+        // --- END OF MODIFIED LOGIC ---
 
         res.status(200).json({ message: 'Application successfully deleted from all records.' });
 

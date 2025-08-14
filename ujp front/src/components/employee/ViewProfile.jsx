@@ -103,9 +103,9 @@ const ViewProfile = () => {
                         {profile.education || 'Not specified'}
                     </div>
                     <div style={styles.infoItem}>
-                        <span style={styles.infoLabel}>CV</span>
+                        <span style={styles.infoLabel}>Resume</span>
                         {profile.cvFilePath ? (
-                            <a href={profile.cvFilePath} target="_blank" rel="noopener noreferrer" style={styles.fileLink}>View CV</a>
+                            <a href={profile.cvFilePath} target="_blank" rel="noopener noreferrer" style={styles.fileLink}>View</a>
                         ) : 'Not uploaded'}
                     </div>
                 </div>

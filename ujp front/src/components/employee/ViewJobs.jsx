@@ -153,44 +153,49 @@ function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f7fafc', padding: '1rem 2rem', fontFamily: 'Inter, sans-serif' }}>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <div style={{ minHeight: '100vh', backgroundColor: '#f7fafc', padding: '1rem 2rem', fontFamily: 'Inter, sans-serif' }}>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-      <h1 style={{ fontSize: '2.5rem', fontWeight: '200', color: '#1a202c', marginBottom: '2rem', textAlign: 'center' ,fontFamily:'monospace'}}>
-        Jobs For You
-      </h1>
+    <h1 style={{ fontSize: '1.5rem', fontWeight: '200', color: '#1a202c', marginBottom: '2rem', textAlign: 'center', fontFamily: 'monospace' }}>
+      Jobs For You
+    </h1>
 
-      {message && (
-        <div
-          style={{
-            padding: '1rem 1.25rem',
-            marginBottom: '1.5rem',
-            borderRadius: '0.5rem',
-            textAlign: 'center',
-            backgroundColor: message.includes('Successfully') ? '#e6fffa' : '#fff5f5',
-            color: message.includes('Successfully') ? '#2c7a7b' : '#c53030',
-            fontWeight: '600',
-            boxShadow: message.includes('Successfully')
-              ? '0 2px 6px rgba(44, 122, 123, 0.3)'
-              : '0 2px 6px rgba(197, 67, 67, 0.3)',
-          }}
-        >
-          {message}
-        </div>
-      )}
+    {message && (
+      <div
+        style={{
+          padding: '1rem 1.25rem',
+          marginBottom: '1.5rem',
+          borderRadius: '0.5rem',
+          textAlign: 'center',
+          backgroundColor: message.includes('Successfully') ? '#e6fffa' : '#fff5f5',
+          color: message.includes('Successfully') ? '#2c7a7b' : '#c53030',
+          fontWeight: '600',
+          boxShadow: message.includes('Successfully')
+            ? '0 2px 6px rgba(44, 122, 123, 0.3)'
+            : '0 2px 6px rgba(197, 67, 67, 0.3)',
+        }}
+      >
+        {message}
+      </div>
+    )}
 
-      {filteredJobs.length === 0 ? (
-        <div style={{ textAlign: 'center', color: '#718096', fontSize: '1.125rem', marginTop: '3rem' }}>
-          <p>No jobs found matching your education level.</p>
-          {employeeData && employeeData.education && (
-            <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#4a5568' }}>
-              Your current education level: <strong>{employeeData.education}</strong>
-            </p>
-          )}
+    {filteredJobs.length === 0 ? (
+      <div style={{ textAlign: 'center', color: '#718096', fontSize: '1.125rem', marginTop: '3rem' }}>
+        <img 
+          src="/empty.png" 
+          alt="No jobs" 
+          style={{ width: '150px', marginBottom: '1rem', opacity: 0.7 }} 
+        />
+        <p>No jobs found matching your education level.</p>
+        {employeeData && employeeData.education && (
           <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#4a5568' }}>
-            Jobs are filtered to show positions that match your education level or require lower qualifications.
+            Your current education level: <strong>{employeeData.education}</strong>
           </p>
-        </div>
+        )}
+        <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#4a5568' }}>
+          Jobs are filtered to show positions that match your education level or require lower qualifications.
+        </p>
+      </div>
       ) : (
         <div
           style={{

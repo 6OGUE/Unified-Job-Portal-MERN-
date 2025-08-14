@@ -139,14 +139,14 @@ const PostJob = () => {
         autoComplete="off"
       >
         <h1 style={{
-          fontSize: '32px',
+          fontSize: '25px',
           fontWeight: '700',
           marginBottom: '30px',
           color: '#333',
           textAlign: 'center',
           fontFamily: 'monospace',
         }}>
-          Post Job
+          New Job
         </h1>
 
         <input

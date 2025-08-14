@@ -52,21 +52,23 @@ router.post('/login', loginUser);
 // @access  Public (should be restricted in production)
 router.post('/create-admin', async (req, res) => {
     try {
-        // Check if an admin user with the default email already exists
         const existing = await User.findOne({ email: 'admin@ujp.com' });
         if (existing) return res.status(400).json({ message: 'Admin user already exists.' });
 
-        // Hash the default admin password
-        const hashedPassword = await bcrypt.hash('admin123', 10);
-        // Create and save the new admin user
-        const adminUser = new User({ name: 'Admin', email: 'admin@ujp.com', password: hashedPassword, role: 'admin' });
+        // Store password as plain text (not recommended for production)
+        const adminUser = new User({ 
+            name: 'Admin', 
+            email: 'admin@ujp.com', 
+            password: 'admin123',   // Plain password stored directly
+            role: 'admin' 
+        });
         await adminUser.save();
         res.status(201).json({ message: 'Admin user created successfully.' });
     } catch (error) {
-        // Handle server errors during admin creation
         res.status(500).json({ error: 'Server error occurred while creating admin user.', details: error.message });
     }
 });
+
 
 // @desc    Get authenticated user profile
 // @route   GET /api/users/profile
