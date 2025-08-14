@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UserProfile = () => {
     const { id: userId, applicationId } = useParams();
@@ -9,7 +11,7 @@ const UserProfile = () => {
     const [applicationStatus, setApplicationStatus] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [message, setMessage] = useState('');
+    const [applicationToUpdate, setApplicationToUpdate] = useState(null);
     const navigate = useNavigate();
     const { token, loadingAuth } = useAuth();
     const headers = { 'Authorization': `Bearer ${token}` };
@@ -43,15 +45,20 @@ const UserProfile = () => {
         }
     }, [userId, applicationId, token, loadingAuth, navigate]);
 
-    const handleUpdateStatus = async (newStatus) => {
-        if (!window.confirm(`Are you sure you want to ${newStatus.toLowerCase()} this application?`)) return;
-        setMessage('');
+    const confirmUpdateStatus = async () => {
+        if (!applicationToUpdate) return;
+        
+        const { id, status } = applicationToUpdate;
+
         try {
-            await axios.put(`/api/applications/status`, { applicationId, status: newStatus }, { headers });
-            setApplicationStatus(newStatus);
-            setMessage(`Application successfully ${newStatus.toLowerCase()}.`);
+            await axios.put(`/api/applications/status`, { applicationId: id, status: status }, { headers });
+            setApplicationStatus(status);
+            toast.success(`Application successfully ${status.toLowerCase()}.`);
         } catch (err) {
-            setMessage(err.response?.data?.message || `Failed to update status.`);
+            console.error(err);
+            toast.error('Failed to update status. Please try again.');
+        } finally {
+            setApplicationToUpdate(null);
         }
     };
 
@@ -71,12 +78,14 @@ const UserProfile = () => {
         certificateItem: { backgroundColor: '#f9f9f9', padding: '12px', borderRadius: '6px', marginBottom: '10px' },
         actionContainer: { borderTop: '2px solid #eee', marginTop: '30px', paddingTop: '20px' },
         actionButton: { padding: '12px 24px', fontSize: '16px', fontWeight: 'bold', border: 'none', borderRadius: '6px', cursor: 'pointer', margin: '0 10px' },
-        acceptButton: { backgroundColor: '#10B981', color: 'white' },
-        rejectButton: { backgroundColor: '#EF4444', color: 'white' },
+        acceptButton: { backgroundColor: '#10b981', color: 'white' },
+        rejectButton: { backgroundColor: '#dc2626', color: 'white' },
         statusDisplay: { fontSize: '18px', fontWeight: 'bold', padding: '12px 24px', borderRadius: '6px' },
         accepted: { color: '#065f46', backgroundColor: '#d1fae5' },
         rejected: { color: '#991b1b', backgroundColor: '#fee2e2' },
-        message: { textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' }
+        message: { textAlign: 'center', fontWeight: 'bold', marginBottom: '1rem' },
+        modalContainer: { position: 'fixed', inset: 0, backgroundColor: 'rgba(75, 85, 99, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 },
+        modalContent: { backgroundColor: '#fff', borderRadius: '0.5rem', padding: '2rem', width: '90%', maxWidth: '400px', textAlign: 'center' },
     };
 
     if (loading || loadingAuth) return <div style={styles.container}>Loading user profile...</div>;
@@ -109,18 +118,58 @@ const UserProfile = () => {
             {applicationId && (
                 <div style={{...styles.section, ...styles.actionContainer}}>
                     <h2 style={styles.sectionTitle}>Application Action</h2>
-                    {message && <p style={{...styles.message, color: message.includes('Failed') ? 'red' : 'green'}}>{message}</p>}
                     
                     {applicationStatus === 'Pending' && (
                         <div>
-                            <button onClick={() => handleUpdateStatus('Accepted')} style={{...styles.actionButton, ...styles.acceptButton}}>Accept Application</button>
-                            <button onClick={() => handleUpdateStatus('Rejected')} style={{...styles.actionButton, ...styles.rejectButton}}>Reject Application</button>
+                            <button onClick={() => setApplicationToUpdate({ id: applicationId, status: 'Accepted' })} style={{...styles.actionButton, ...styles.acceptButton}}>Accept Application</button>
+                            <button onClick={() => setApplicationToUpdate({ id: applicationId, status: 'Rejected' })} style={{...styles.actionButton, ...styles.rejectButton}}>Reject Application</button>
                         </div>
                     )}
                     {applicationStatus === 'Accepted' && <div style={{...styles.statusDisplay, ...styles.accepted}}>Application Accepted</div>}
                     {applicationStatus === 'Rejected' && <div style={{...styles.statusDisplay, ...styles.rejected}}>Application Rejected</div>}
                 </div>
             )}
+            
+            {applicationToUpdate && (
+                <div style={styles.modalContainer}>
+                    <div style={styles.modalContent}>
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem' }}>Confirm Action</h2>
+                        <p style={{ color: '#374151', marginBottom: '1.5rem' }}>Do you really want to {applicationToUpdate.status === 'Accepted' ? 'accept' : 'reject'} this application?</p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                            <button
+                                onClick={() => setApplicationToUpdate(null)}
+                                style={{
+                                  padding: '0.5rem 1rem',
+                                  fontSize: '0.875rem',
+                                  borderRadius: '0.375rem',
+                                  backgroundColor: '#4f46e5',
+                                  color: '#fff',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmUpdateStatus}
+                                style={{
+                                  padding: '0.5rem 1rem',
+                                  fontSize: '0.875rem',
+                                  borderRadius: '0.375rem',
+                                  backgroundColor: '#dc2626',
+                                  color: '#fff',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                }}
+                            >
+                                {/* ✅ Updated: Changed the button text to 'Accept' or 'Reject' */}
+                                {applicationToUpdate.status === 'Accepted' ? 'Accept' : 'Reject'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <ToastContainer position="top-center" autoClose={3000} />
         </div>
     );
 };

@@ -1,4 +1,77 @@
 import React, { useState, useEffect } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// A simple front-end confirmation modal component
+const ConfirmationModal = ({ isOpen, onConfirm, onCancel, job }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: '0',
+      backgroundColor: 'rgba(26, 32, 44, 0.75)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '1rem',
+      zIndex: '100'
+    }}>
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '1rem',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        maxWidth: '28rem',
+        width: '100%',
+        padding: '2rem',
+        position: 'relative'
+      }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1a202c', marginBottom: '1rem' }}>
+          Confirm Application
+        </h2>
+        <p style={{ fontSize: '1rem', color: '#4a5568', marginBottom: '1.5rem' }}>
+          Are you sure you want to apply for "<strong>{job.title}</strong>" at "<strong>{job.companyName}</strong>"?
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+          <button
+            onClick={onCancel}
+            style={{
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: '1px solid #e2e8f0',
+              backgroundColor: '#f7fafc',
+              cursor: 'pointer',
+              fontWeight: '600',
+              color: '#4a5568',
+              transition: 'all 200ms ease-in-out'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#edf2f7'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f7fafc'}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            style={{
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              backgroundColor: '#059669',
+              color: '#ffffff',
+              cursor: 'pointer',
+              fontWeight: '700',
+              transition: 'all 200ms ease-in-out'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#047857'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#059669'}
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function App() {
   const [jobs, setJobs] = useState([]);
@@ -7,8 +80,9 @@ function App() {
   const [showPreview, setShowPreview] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState('');
   const [employeeData, setEmployeeData] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [jobToApply, setJobToApply] = useState(null);
 
   const getToken = () => {
     return localStorage.getItem('token');
@@ -87,53 +161,60 @@ function App() {
     setShowPreview(true);
   };
 
-  const handleApplyJob = async (job) => {
-  setMessage('');
+  const handleApplyJobClick = (job) => {
+    setJobToApply(job);
+    setShowConfirmModal(true);
+  };
 
-  const confirmApply = window.confirm(`Are you sure you want to apply for "${job.title}" at "${job.companyName}"?`);
-  if (!confirmApply) return;
+  const handleConfirmApply = async () => {
+    setShowConfirmModal(false);
+    if (!jobToApply) return;
 
-  const token = getToken();
+    const job = jobToApply;
+    
+    const token = getToken();
 
-  if (!token) {
-    setMessage('You must be logged in to apply for jobs.');
-    return;
-  }
-
-  if (!employeeData || !employeeData._id || !employeeData.name) {
-    setMessage('Employee data not available. Cannot apply.');
-    return;
-  }
-
-  try {
-    const applicationData = {
-      jobId: job._id,
-      jobTitle: job.title,
-      companyName: job.companyName,
-    };
-
-    const response = await fetch('/api/applications', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(applicationData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    if (!token) {
+      toast.error('You must be logged in to apply for jobs.');
+      return;
     }
 
-    const result = await response.json();
-    setMessage(`Successfully applied for "${job.title}" at "${job.companyName}"!`);
-    console.log('Application successful:', result);
-  } catch (err) {
-    setMessage(`Failed to apply for job: ${err.message}`);
-    console.error('Error applying for job:', err);
-  }
-};
+    if (!employeeData || !employeeData._id || !employeeData.name) {
+      toast.error('Employee data not available. Cannot apply.');
+      return;
+    }
+
+    try {
+      const applicationData = {
+        jobId: job._id,
+        jobTitle: job.title,
+        companyName: job.companyName,
+      };
+
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(applicationData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      toast.success(`Successfully applied for "${job.title}" at "${job.companyName}"!`, {
+        position: "top-center"
+      });
+      console.log('Application successful:', result);
+    } catch (err) {
+      toast.error(`Failed to apply for job: ${err.message}`);
+      console.error('Error applying for job:', err);
+    }
+  };
 
 
   if (loading) {
@@ -153,49 +234,43 @@ function App() {
   }
 
   return (
-  <div style={{ minHeight: '100vh', backgroundColor: '#f7fafc', padding: '1rem 2rem', fontFamily: 'Inter, sans-serif' }}>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <div style={{ minHeight: '100vh', backgroundColor: '#f7fafc', padding: '1rem 2rem', fontFamily: 'Inter, sans-serif' }}>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    <h1 style={{ fontSize: '1.5rem', fontWeight: '200', color: '#1a202c', marginBottom: '2rem', textAlign: 'center', fontFamily: 'monospace' }}>
-      Jobs For You
-    </h1>
+      {/* ToastContainer to display toasts */}
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
 
-    {message && (
-      <div
-        style={{
-          padding: '1rem 1.25rem',
-          marginBottom: '1.5rem',
-          borderRadius: '0.5rem',
-          textAlign: 'center',
-          backgroundColor: message.includes('Successfully') ? '#e6fffa' : '#fff5f5',
-          color: message.includes('Successfully') ? '#2c7a7b' : '#c53030',
-          fontWeight: '600',
-          boxShadow: message.includes('Successfully')
-            ? '0 2px 6px rgba(44, 122, 123, 0.3)'
-            : '0 2px 6px rgba(197, 67, 67, 0.3)',
-        }}
-      >
-        {message}
-      </div>
-    )}
+      <h1 style={{ fontSize: '1.5rem', fontWeight: '200', color: '#1a202c', marginBottom: '2rem', textAlign: 'center', fontFamily: 'monospace' }}>
+        Jobs For You
+      </h1>
 
-    {filteredJobs.length === 0 ? (
-      <div style={{ textAlign: 'center', color: '#718096', fontSize: '1.125rem', marginTop: '3rem' }}>
-        <img 
-          src="/empty.png" 
-          alt="No jobs" 
-          style={{ width: '150px', marginBottom: '1rem', opacity: 0.7 }} 
-        />
-        <p>No jobs found matching your education level.</p>
-        {employeeData && employeeData.education && (
+      {filteredJobs.length === 0 ? (
+        <div style={{ textAlign: 'center', color: '#718096', fontSize: '1.125rem', marginTop: '3rem' }}>
+          <img 
+            src="/empty.png" 
+            alt="No jobs" 
+            style={{ width: '150px', marginBottom: '1rem', opacity: 0.7 }} 
+          />
+          <p>No jobs found matching your education level.</p>
+          {employeeData && employeeData.education && (
+            <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#4a5568' }}>
+              Your current education level: <strong>{employeeData.education}</strong>
+            </p>
+          )}
           <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#4a5568' }}>
-            Your current education level: <strong>{employeeData.education}</strong>
+            Jobs are filtered to show positions that match your education level or require lower qualifications.
           </p>
-        )}
-        <p style={{ fontSize: '0.9rem', marginTop: '0.5rem', color: '#4a5568' }}>
-          Jobs are filtered to show positions that match your education level or require lower qualifications.
-        </p>
-      </div>
+        </div>
       ) : (
         <div
           style={{
@@ -266,66 +341,66 @@ function App() {
                 )}
               </div>
               <div
-  style={{
-    padding: '1.25rem 2rem',
-    borderTop: '1px solid #e2e8f0',
-    display: 'flex',
-    justifyContent: 'space-between',  // <-- changed from 'flex-end' to 'space-between'
-    gap: '1rem',
-    backgroundColor: '#f9fafb',
-  }}
->
-  <button
-    onClick={() => handleViewJob(job)}
-    style={{
-      backgroundColor: '#2563eb',
-      color: '#fff',
-      fontWeight: '700',
-      padding: '0.5rem 1.25rem',
-      borderRadius: '0.5rem',
-      border: 'none',
-      cursor: 'pointer',
-      boxShadow: '0 3px 6px rgba(37, 99, 235, 0.4)',
-      transition: 'background-color 250ms ease, box-shadow 250ms ease',
-      userSelect: 'none',
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = '#1d4ed8';
-      e.currentTarget.style.boxShadow = '0 6px 12px rgba(29, 78, 216, 0.6)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = '#2563eb';
-      e.currentTarget.style.boxShadow = '0 3px 6px rgba(37, 99, 235, 0.4)';
-    }}
-  >
-    View Details
-  </button>
-  <button
-    onClick={() => handleApplyJob(job)}
-    style={{
-      backgroundColor: '#059669',
-      color: '#fff',
-      fontWeight: '700',
-      padding: '0.5rem 1.25rem',
-      borderRadius: '0.5rem',
-      border: 'none',
-      cursor: 'pointer',
-      boxShadow: '0 3px 6px rgba(5, 150, 105, 0.4)',
-      transition: 'background-color 250ms ease, box-shadow 250ms ease',
-      userSelect: 'none',
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.backgroundColor = '#047857';
-      e.currentTarget.style.boxShadow = '0 6px 12px rgba(4, 120, 87, 0.6)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.backgroundColor = '#059669';
-      e.currentTarget.style.boxShadow = '0 3px 6px rgba(5, 150, 105, 0.4)';
-    }}
-  >
-    Apply Now
-  </button>
-</div>
+                style={{
+                  padding: '1.25rem 2rem',
+                  borderTop: '1px solid #e2e8f0',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  backgroundColor: '#f9fafb',
+                }}
+              >
+                <button
+                  onClick={() => handleViewJob(job)}
+                  style={{
+                    backgroundColor: '#2563eb',
+                    color: '#fff',
+                    fontWeight: '700',
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 3px 6px rgba(37, 99, 235, 0.4)',
+                    transition: 'background-color 250ms ease, box-shadow 250ms ease',
+                    userSelect: 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1d4ed8';
+                    e.currentTarget.style.boxShadow = '0 6px 12px rgba(29, 78, 216, 0.6)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2563eb';
+                    e.currentTarget.style.boxShadow = '0 3px 6px rgba(37, 99, 235, 0.4)';
+                  }}
+                >
+                  View Details
+                </button>
+                <button
+                  onClick={() => handleApplyJobClick(job)}
+                  style={{
+                    backgroundColor: '#059669',
+                    color: '#fff',
+                    fontWeight: '700',
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0 3px 6px rgba(5, 150, 105, 0.4)',
+                    transition: 'background-color 250ms ease, box-shadow 250ms ease',
+                    userSelect: 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#047857';
+                    e.currentTarget.style.boxShadow = '0 6px 12px rgba(4, 120, 87, 0.6)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#059669';
+                    e.currentTarget.style.boxShadow = '0 3px 6px rgba(5, 150, 105, 0.4)';
+                  }}
+                >
+                  Apply Now
+                </button>
+              </div>
 
             </div>
           ))}
@@ -389,7 +464,7 @@ function App() {
             {/* Apply button */}
             <div style={{ textAlign: 'right', marginTop: '1.5rem' }}>
               <button
-                onClick={() => handleApplyJob(selectedJob)}
+                onClick={() => handleApplyJobClick(selectedJob)}
                 style={{
                   backgroundColor: '#059669',
                   color: '#ffffff',
@@ -416,6 +491,16 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Confirmation Modal */}
+      {showConfirmModal && jobToApply && (
+        <ConfirmationModal
+          isOpen={showConfirmModal}
+          onConfirm={handleConfirmApply}
+          onCancel={() => setShowConfirmModal(false)}
+          job={jobToApply}
+        />
       )}
     </div>
   );

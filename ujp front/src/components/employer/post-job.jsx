@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+// ✅ Added Toastify imports
+import { toast, ToastContainer } from 'react-toastify'; // ✅ NEW: import toast functions
+import 'react-toastify/dist/ReactToastify.css'; // ✅ NEW: import toast styles
 
 const PostJob = () => {
   const [formData, setFormData] = useState({
@@ -46,7 +49,8 @@ const PostJob = () => {
       }
 
       if (res.ok) {
-        alert('Job posted successfully!');
+        // ❌ Removed: alert('Job posted successfully!');
+        toast.success('Job posted successfully!'); // ✅ NEW: Toastify success message
         setFormData({
           companyName: '',
           title: '',
@@ -57,11 +61,13 @@ const PostJob = () => {
           additionalQualification: ''
         });
       } else {
-        alert(data?.message || 'Failed to post job');
+        // ❌ Removed: alert(data?.message || 'Failed to post job');
+        toast.error(data?.message || 'Failed to post job'); // ✅ NEW: Toastify error message
       }
     } catch (err) {
       console.error(err);
-      alert('Server error while posting job');
+      // ❌ Removed: alert('Server error while posting job');
+      toast.error('Server error while posting job'); // ✅ NEW: Toastify error message
     }
   };
 
@@ -256,6 +262,9 @@ const PostJob = () => {
           </button>
         </div>
       </form>
+
+      {/* ✅ NEW: Toast container to render notifications */}
+      <ToastContainer position="top-center" autoClose={3000} /> 
     </div>
   );
 };

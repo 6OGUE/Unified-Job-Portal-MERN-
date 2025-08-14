@@ -2,13 +2,102 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+// New front-end confirmation modal for delete action
+const DeleteConfirmationModal = ({ isOpen, onConfirm, onCancel, application }) => {
+  if (!isOpen) return null;
+
+  const modalOverlayStyle = {
+    position: 'fixed',
+    inset: '0',
+    backgroundColor: 'rgba(26, 32, 44, 0.75)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '1rem',
+    zIndex: '100'
+  };
+
+  const modalContentStyle = {
+    backgroundColor: '#ffffff',
+    borderRadius: '0.5rem',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+    maxWidth: '28rem',
+    width: '100%',
+    padding: '1.5rem',
+    position: 'relative'
+  };
+
+  const buttonContainerStyle = {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '0.75rem',
+    marginTop: '1.5rem'
+  };
+
+  const cancelButtonStyling = {
+    padding: '0.5rem 1rem',
+    borderRadius: '0.375rem',
+    border: '1px solid #d1d5db',
+    backgroundColor: '#f9fafb',
+    cursor: 'pointer',
+    fontWeight: '500',
+    color: '#374151',
+    transition: 'all 0.2s ease-in-out'
+  };
+
+  const confirmButtonStyling = {
+    padding: '0.5rem 1rem',
+    borderRadius: '0.375rem',
+    border: 'none',
+    backgroundColor: '#ef4444',
+    color: '#ffffff',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease-in-out'
+  };
+
+  return (
+    <div style={modalOverlayStyle}>
+      <div style={modalContentStyle}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#dc2626', marginBottom: '0.75rem' }}>
+          Confirm Deletion
+        </h2>
+        <p style={{ fontSize: '1rem', color: '#4b5563', marginBottom: '1.25rem' }}>
+          ⚠️ You won't be able to track this application once you delete it. Are you sure you want to delete your application for "<strong>{application.jobTitle}</strong>" at "<strong>{application.companyName}</strong>"?
+        </p>
+        <div style={buttonContainerStyle}>
+          <button
+            onClick={onCancel}
+            style={cancelButtonStyling}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            style={confirmButtonStyling}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const ApplicationHistory = () => {
   const { token, role, loadingAuth } = useAuth();
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState({ content: '', type: '' }); // Updated to an object
+  const [message, setMessage] = useState({ content: '', type: '' });
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [applicationToDelete, setApplicationToDelete] = useState(null);
 
   const statusPillStyle = (status) => ({
     display: 'inline-block',
@@ -35,7 +124,6 @@ const ApplicationHistory = () => {
   const deleteButtonStyle = { backgroundColor: '#ef4444', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.375rem', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500', transition: 'background-color 0.2s ease-in-out' };
   const deleteButtonHoverStyle = { backgroundColor: '#dc2626' };
 
-  // New styles for the message box
   const messageBoxStyle = {
     position: 'fixed',
     top: '50%',
@@ -67,14 +155,14 @@ const ApplicationHistory = () => {
   };
 
   const overlayStyle = {
-position: 'fixed',
-top: 0,
-left: 0,
-width: '100%',
-height: '100%',
-backgroundColor: 'rgba(0, 0, 0, 0.8)', // Current value
-zIndex: 99,
-};
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    zIndex: 99,
+  };
 
 
   useEffect(() => {
@@ -105,11 +193,18 @@ zIndex: 99,
     }
   }, [token, role, loadingAuth, navigate]);
 
-  const handleDeleteApplication = async (appId, jobTitle, companyName) => {
+  const handleDeleteApplicationClick = (app) => {
+    setApplicationToDelete(app);
+    setShowDeleteConfirmModal(true);
+  };
+  
+  const handleConfirmDelete = async () => {
+    setShowDeleteConfirmModal(false);
+    if (!applicationToDelete) return;
+
+    const { _id: appId, jobTitle, companyName } = applicationToDelete;
+    
     setMessage({ content: '', type: '' });
-    if (!window.confirm(`⚠️You Wont Be Able to Track this application once you delete it. Are you sure?`)) {
-      return;
-    }
     try {
       const response = await fetch(`/api/applications/${appId}`, {
         method: 'DELETE',
@@ -126,6 +221,7 @@ zIndex: 99,
       setMessage({ content: `Failed to delete application: ${err.message}`, type: 'error' });
     }
   };
+
 
   const handleClickStatus = (status) => {
     let content;
@@ -208,7 +304,7 @@ zIndex: 99,
                       style={deleteButtonStyle}
                       onMouseOver={(e) => e.currentTarget.style.backgroundColor = deleteButtonHoverStyle.backgroundColor}
                       onMouseOut={(e) => e.currentTarget.style.backgroundColor = deleteButtonStyle.backgroundColor}
-                      onClick={() => handleDeleteApplication(app._id, app.jobTitle, app.companyName)}
+                      onClick={() => handleDeleteApplicationClick(app)}
                     >
                       Delete
                     </button>
@@ -234,6 +330,16 @@ zIndex: 99,
             </p>
           </div>
         </>
+      )}
+
+      {/* Conditional rendering for the delete confirmation modal */}
+      {showDeleteConfirmModal && applicationToDelete && (
+        <DeleteConfirmationModal
+          isOpen={showDeleteConfirmModal}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setShowDeleteConfirmModal(false)}
+          application={applicationToDelete}
+        />
       )}
     </div>
   );
