@@ -1,8 +1,41 @@
 import React, { useEffect, useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Reusable Confirmation Modal
+const ConfirmationModal = ({ isOpen, onConfirm, onCancel, itemName }) => {
+  if (!isOpen) return null;
+  
+  return (
+      <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(75, 85, 99, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '0.5rem', padding: '2rem', width: '90%', maxWidth: '400px', textAlign: 'center' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem', color: '#ef4444' }}>Confirm Deletion</h2>
+              <p style={{ color: '#374151', marginBottom: '1.5rem' }}>
+                  Are you sure you want to delete **{itemName}**? This action cannot be undone.
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                  <button
+                      onClick={onCancel}
+                      style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '0.375rem', backgroundColor: '#4f46e5', color: '#fff', border: 'none', cursor: 'pointer' }}
+                  >
+                      Cancel
+                  </button>
+                  <button
+                      onClick={onConfirm}
+                      style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '0.375rem', backgroundColor: '#dc3545', color: '#fff', border: 'none', cursor: 'pointer' }}
+                  >
+                      Delete
+                  </button>
+              </div>
+          </div>
+      </div>
+  );
+};
 
 const EmployerView = () => {
   const [employers, setEmployers] = useState([]);
   const [error, setError] = useState('');
+  const [employerToDelete, setEmployerToDelete] = useState(null);
 
   useEffect(() => {
     fetchEmployers();
@@ -16,12 +49,13 @@ const EmployerView = () => {
       setEmployers(data);
     } catch (err) {
       setError(err.message);
+      toast.error(err.message);
     }
   };
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this employer?');
-    if (!confirmDelete) return;
+  const handleDelete = async () => {
+    if (!employerToDelete) return;
+    const id = employerToDelete._id;
 
     try {
       const response = await fetch(`http://localhost:5000/api/admin/employers/${id}`, {
@@ -31,14 +65,18 @@ const EmployerView = () => {
       if (!response.ok) throw new Error('Failed to delete employer');
 
       setEmployers(prev => prev.filter(emp => emp._id !== id));
+      toast.success(`${employerToDelete.name || employerToDelete.companyName} has been deleted successfully!`);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
+    } finally {
+      setEmployerToDelete(null);
     }
   };
 
   return (
     <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333',fontFamily:'monospace' }}>Employers List</h2>
+      <ToastContainer position="top-center" autoClose={3000} />
+      <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333', fontFamily:'monospace' }}>Employers List</h2>
 
       {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
 
@@ -69,7 +107,7 @@ const EmployerView = () => {
                   <td style={{ padding: '12px' }}>{emp.email}</td>
                   <td style={{ textAlign: 'center', padding: '12px' }}>
                     <button
-                      onClick={() => handleDelete(emp._id)}
+                      onClick={() => setEmployerToDelete(emp)}
                       style={{
                         backgroundColor: '#dc3545',
                         color: 'white',
@@ -97,6 +135,12 @@ const EmployerView = () => {
           </tbody>
         </table>
       </div>
+      <ConfirmationModal
+        isOpen={!!employerToDelete}
+        onConfirm={handleDelete}
+        onCancel={() => setEmployerToDelete(null)}
+        itemName={employerToDelete?.name || employerToDelete?.companyName}
+      />
     </div>
   );
 };
