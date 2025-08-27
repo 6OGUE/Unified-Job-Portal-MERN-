@@ -9,44 +9,41 @@ import { fileURLToPath } from 'url';
 import userRoutes from './routes/userRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import jobRoutes from './routes/jobRoutes.js';
-import applicationRoutes from './routes/applicationRoutes.js'; // NEW: Import application routes
+import applicationRoutes from './routes/applicationRoutes.js';
 
-dotenv.config(); // Load environment variables from .env file
+dotenv.config(); // Load environment variables
 
 const app = express();
 
-// Enable CORS for all origins. In a production environment, you should restrict this
-// to specific origins for security.
+// Enable CORS for all origins (restrict in production)
 app.use(cors());
 
-// Middleware to parse JSON request bodies. This is essential for handling JSON data
-// sent in POST and PUT requests.
+// Middleware to parse JSON request bodies
 app.use(express.json());
 
-// Serve static files from the 'uploads' directory. This is used for serving
-// uploaded CVs, certificates, etc.
+// Setup static folder for uploaded files (CVs, certificates, etc.)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Basic root route to confirm the API is running
+// Root route
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Use API routes. These lines connect your route modules to specific base paths.
+// API routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/jobs', jobRoutes);
-app.use('/api/applications', applicationRoutes); // NEW: Register application routes
+app.use('/api/applications', applicationRoutes);
 
-// Connect to MongoDB using the URI from environment variables
+// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB connected')) // Log success
-  .catch((err) => console.log('❌ MongoDB connection error:', err)); // Log error
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch((err) => console.log('❌ MongoDB connection error:', err));
 
-// Define the port and start the server
-const PORT = process.env.PORT || 5000; // Use port from environment variable or default to 5000
+// Start server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`); // Confirm server start
+  console.log(`🚀 Server running on port ${PORT}`);
 });

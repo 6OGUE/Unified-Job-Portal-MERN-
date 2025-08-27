@@ -14,7 +14,7 @@ router.get('/employees', async (req, res) => {
   }
 });
 
-// DELETE /api/admin/employees/:id  <-- new route to delete employee by id
+// DELETE /api/admin/employees/:id
 router.delete('/employees/:id', async (req, res) => {
   const employeeId = req.params.id;
   try {
@@ -28,6 +28,8 @@ router.delete('/employees/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error deleting employee' });
   }
 });
+
+// DELETE /api/admin/employers/:id
 router.delete('/employers/:id', async (req, res) => {
   const employerId = req.params.id;
   try {
@@ -50,6 +52,27 @@ router.get('/employers', async (req, res) => {
   } catch (error) {
     console.error('Error fetching employers:', error);
     res.status(500).json({ message: 'Server error fetching employers' });
+  }
+});
+
+// GET /api/admin/certificates/:id
+router.get('/certificates/:id', async (req, res) => {
+  const employerId = req.params.id;
+  try {
+    const employer = await User.findOne({ _id: employerId, role: 'employer' });
+
+    if (!employer) {
+      return res.status(404).json({ message: 'Employer not found' });
+    }
+
+    if (!employer.certificateFilePath) {
+      return res.status(404).json({ message: 'Certificate not found for this employer' });
+    }
+
+    res.json({ certificateUrl: employer.certificateFilePath });
+  } catch (error) {
+    console.error('Error fetching certificate:', error);
+    res.status(500).json({ message: 'Server error fetching certificate' });
   }
 });
 

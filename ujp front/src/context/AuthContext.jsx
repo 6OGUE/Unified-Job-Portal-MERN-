@@ -1,69 +1,77 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+// src/context/AuthContext.jsx
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [role, setRole] = useState(null);
+  const [user, setUser] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
+    const initAuth = async () => {
+      try {
+        const storedToken = localStorage.getItem("token");
+        if (!storedToken) return;
 
-    if (storedToken) {
-      setToken(storedToken);
-      const fetchUserProfile = async () => {
-        try {
-          const response = await fetch('/api/users/profile', {
-            headers: {
-              'Authorization': `Bearer ${storedToken}`,
-            },
-          });
+        setToken(storedToken);
 
-          if (!response.ok) {
-            console.error('Failed to fetch user profile, token might be invalid or expired.');
-            logout();
-            return;
-          }
+        const response = await fetch("/api/users/profile", {
+          headers: { Authorization: `Bearer ${storedToken}` },
+        });
 
-          const userData = await response.json();
-          setRole(userData.role);
-          localStorage.setItem('role', userData.role);
-        } catch (error) {
-          console.error('Error fetching user profile from AuthContext:', error);
+        if (!response.ok) {
+          console.error("Failed to fetch profile, logging out.");
           logout();
-        } finally {
-          setLoadingAuth(false);
+          return;
         }
-      };
-      fetchUserProfile();
-    } else {
-      setLoadingAuth(false);
-      localStorage.removeItem('role');
-    }
-  }, []); // Empty dependency array means this runs once on mount
 
-  const login = (newToken, newRole) => {
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('role', newRole);
+        const userData = await response.json();
+        setUser(userData);
+        setRole(userData.role);
+
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("role", userData.role);
+      } catch (err) {
+        console.error("AuthContext fetch error:", err);
+        logout();
+      } finally {
+        setLoadingAuth(false);
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  const login = (newToken, userData) => {
+    if (!newToken || !userData) return;
+    localStorage.setItem("token", newToken);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("role", userData.role);
+
     setToken(newToken);
-    setRole(newRole);
+    setUser(userData);
+    setRole(userData.role);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("role");
+
     setToken(null);
+    setUser(null);
     setRole(null);
   };
 
   return (
-    <AuthContext.Provider value={{ token, role, login, logout, loadingAuth }}>
+    <AuthContext.Provider
+      value={{ token, role, user, login, logout, loadingAuth }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);

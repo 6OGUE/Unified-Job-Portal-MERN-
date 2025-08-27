@@ -6,6 +6,9 @@ import 'react-toastify/dist/ReactToastify.css';
 const ConfirmationModal = ({ isOpen, onConfirm, onCancel, job }) => {
   if (!isOpen) return null;
 
+  const hasAdditionalQualifications =
+    Array.isArray(job.additionalQualification) && job.additionalQualification.length > 0;
+
   return (
     <div style={{
       position: 'fixed',
@@ -29,6 +32,21 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, job }) => {
         <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1a202c', marginBottom: '1rem' }}>
           Confirm Application
         </h2>
+        {hasAdditionalQualifications && (
+          <div style={{
+            backgroundColor: '#fffbea',
+            color: '#b7791f',
+            borderRadius: '0.5rem',
+            padding: '0.75rem 1rem',
+            marginBottom: '1rem',
+            fontWeight: '600',
+            fontSize: '1rem',
+            border: '1px solid #f6e05e'
+          }}>
+            <h3 style={{ fontFamily: 'monospace' }}>NOTE:</h3>
+            <span style={{ fontFamily: 'monospace' }}>This job requires certain additional qualifications to be considered. Make sure you have those and have uploaded them in your profile before you continue.</span>
+          </div>
+        )}
         <p style={{ fontSize: '1rem', color: '#4a5568', marginBottom: '1.5rem' }}>
           Are you sure you want to apply for "<strong>{job.title}</strong>" at "<strong>{job.companyName}</strong>"?
         </p>

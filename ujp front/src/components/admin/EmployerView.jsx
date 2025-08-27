@@ -53,6 +53,28 @@ const EmployerView = () => {
     }
   };
 
+  // The function to view a certificate, updated to make an API call
+  const handleViewCertificate = async (id) => {
+    try {
+      // Make a GET request to a hypothetical certificate endpoint
+      const response = await fetch(`http://localhost:5000/api/admin/certificates/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch certificate');
+
+      const data = await response.json();
+      const certificateUrl = data.certificateUrl;
+
+      if (certificateUrl) {
+        // Open the certificate URL in a new browser tab
+        window.open(certificateUrl, '_blank');
+        toast.success('Opened certificate in a new tab.');
+      } else {
+        toast.warn('Certificate URL not found in the response.');
+      }
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
   const handleDelete = async () => {
     if (!employerToDelete) return;
     const id = employerToDelete._id;
@@ -106,6 +128,23 @@ const EmployerView = () => {
                   <td style={{ padding: '12px' }}>{emp.name || emp.companyName}</td>
                   <td style={{ padding: '12px' }}>{emp.email}</td>
                   <td style={{ textAlign: 'center', padding: '12px' }}>
+                    <button
+                      onClick={() => handleViewCertificate(emp._id)}
+                      style={{
+                        backgroundColor: '#007bff',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 20px',
+                        cursor: 'pointer',
+                        borderRadius: '4px',
+                        marginRight: '8px',
+                        transition: 'background 0.3s'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#0056b3'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#007bff'}
+                    >
+                      View Certificate
+                    </button>
                     <button
                       onClick={() => setEmployerToDelete(emp)}
                       style={{

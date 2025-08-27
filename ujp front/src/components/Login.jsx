@@ -1,14 +1,14 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext.jsx';
-
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+
+  const { login } = useAuth(); // ✅ correct usage
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,11 +28,11 @@ function Login() {
         return;
       }
 
-      // Pass both the token and the role to the login function
-      login(data.token, data.user.role);
+      // ✅ single clean login call
+      login(data.token, data.user);
 
+      // ✅ navigate based on role
       const userRole = data.user.role;
-
       if (userRole === 'employer') {
         navigate('/employer-dashboard');
       } else if (userRole === 'employee' || userRole === 'job seeker') {
@@ -42,26 +42,37 @@ function Login() {
       } else {
         setMessage('Unknown user role: ' + userRole);
       }
-
     } catch (error) {
       setMessage('Error: ' + error.message);
     }
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '210vh',
-      backgroundColor: '#f0f4f8',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <form onSubmit={handleSubmit} style={{ width: '320px',position:'relative',marginBottom:'1000px' }}>
-        <h2 style={{ marginBottom: '10px', color: '#333', textAlign: 'center' }}>Log-in</h2>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f0f4f8',
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      <form
+        onSubmit={handleSubmit}
+        style={{ width: '320px', position: 'relative' }}
+      >
+        <h2 style={{ marginBottom: '10px', color: '#333', textAlign: 'center' }}>
+          Log-in
+        </h2>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <img src="/icons/user.png" alt="User Icon" style={{ width: '80px', height: '80px' }} />
+          <img
+            src="/icons/user.png"
+            alt="User Icon"
+            style={{ width: '80px', height: '80px' }}
+          />
         </div>
+
         <input
           type="email"
           required
@@ -74,9 +85,10 @@ function Login() {
             marginBottom: '20px',
             borderRadius: '5px',
             border: '1px solid #ccc',
-            fontSize: '16px'
+            fontSize: '16px',
           }}
         />
+
         <input
           type="password"
           required
@@ -89,29 +101,42 @@ function Login() {
             marginBottom: '30px',
             borderRadius: '5px',
             border: '1px solid #ccc',
-            fontSize: '16px'
+            fontSize: '16px',
           }}
         />
-        <button type="submit" style={{
-          width: '70%',
-          padding: '12px',
-          backgroundColor: '#007bff',
-          color: 'white',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          border: 'none',
-          borderRadius: '25px',
-          cursor: 'pointer',
-          display: 'block',
-          margin: '0 auto'
-        }}>
+
+        <button
+          type="submit"
+          style={{
+            width: '70%',
+            padding: '12px',
+            backgroundColor: '#007bff',
+            color: 'white',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            border: 'none',
+            borderRadius: '25px',
+            cursor: 'pointer',
+            display: 'block',
+            margin: '0 auto',
+          }}
+        >
           Login
         </button>
-        {message && <p style={{ marginTop: '10px', color: 'red', textAlign: 'center' }}>{message}</p>}
+
+        {message && (
+          <p
+            style={{
+              marginTop: '10px',
+              color: 'red',
+              textAlign: 'center',
+            }}
+          >
+            {message}
+          </p>
+        )}
       </form>
-
     </div>
-
   );
 }
 
