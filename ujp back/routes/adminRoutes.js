@@ -1,5 +1,6 @@
 import express from 'express';
-import User from '../models/user.js';
+import User from '../models/User.js';
+import Report from '../models/report.js';
 
 const router = express.Router();
 
@@ -73,6 +74,32 @@ router.get('/certificates/:id', async (req, res) => {
   } catch (error) {
     console.error('Error fetching certificate:', error);
     res.status(500).json({ message: 'Server error fetching certificate' });
+  }
+});
+
+// GET /api/admin/reports - View all job reports
+router.get('/reports', async (req, res) => {
+  try {
+    const reports = await Report.find().sort({ createdAt: -1 });
+    res.json(reports);
+  } catch (error) {
+    console.error('Error fetching reports:', error);
+    res.status(500).json({ message: 'Server error fetching reports' });
+  }
+});
+
+// DELETE /api/admin/reports/:id - Delete a report by ID
+router.delete('/reports/:id', async (req, res) => {
+  try {
+    const reportId = req.params.id;
+    const deletedReport = await Report.findByIdAndDelete(reportId);
+    if (!deletedReport) {
+      return res.status(404).json({ message: 'Report not found.' });
+    }
+    res.json({ message: 'Report deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting report:', error);
+    res.status(500).json({ message: 'Server error deleting report.' });
   }
 });
 

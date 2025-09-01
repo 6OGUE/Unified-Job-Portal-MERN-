@@ -21,6 +21,7 @@ import UserProfile from './components/employer/UserProfile.jsx';
 import { AuthProvider } from './context/AuthContext';
 import ApplicationHistory from './components/employee/history';
 import RoleBasedHome from './components/RoleBasedHome';
+import AdminReports from './components/admin/AdminReports'; // Add this import
 
 function App() {
     return (
@@ -50,6 +51,7 @@ function App() {
 
                     <Route path="/employee/applications" element={<ApplicationHistory />} />
                     <Route path="/home" element={<RoleBasedHome />} />
+                    <Route path="/admin/reports" element={<AdminReports />} /> {/* Added reports route */}
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

@@ -53,7 +53,7 @@ function Login() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100vh',
+        height: '90vh',
         backgroundColor: '#f0f4f8',
         fontFamily: 'Arial, sans-serif',
       }}

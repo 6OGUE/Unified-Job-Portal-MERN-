@@ -216,6 +216,10 @@ function ViewJobs() {
   const [employeeData, setEmployeeData] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [jobToApply, setJobToApply] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [jobToReport, setJobToReport] = useState(null);
+  const [reportDescription, setReportDescription] = useState('');
+  
 
   const getToken = () => {
     return localStorage.getItem('token');
@@ -339,6 +343,45 @@ function ViewJobs() {
     }
   };
 
+  const handleReportJobClick = (job) => {
+    setJobToReport(job);
+    setReportDescription('');
+    setShowReportModal(true);
+  };
+
+  const handleReportSubmit = async () => {
+    if (!reportDescription.trim()) {
+      toast.error('Please enter a description for your report.');
+      return;
+    }
+    const token = getToken();
+    if (!token) {
+      toast.error('You must be logged in to report a job.');
+      return;
+    }
+    try {
+      const reportData = {
+        jobId: jobToReport._id,
+        jobTitle: jobToReport.title,
+        companyName: jobToReport.companyName,
+        description: reportDescription,
+      };
+      const response = await fetch('/api/jobs/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(reportData),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      toast.success('Report submitted successfully!', { position: "top-center" });
+      setShowReportModal(false);
+    } catch (err) {
+      toast.error(`Failed to submit report: ${err.message}`);
+    }
+  };
+
   if (loading) {
     return ( <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#f7fafc' }}> <div style={{ fontSize: '1.25rem', fontWeight: '600', color: '#4a5568' }}>Loading jobs and employee data...</div> </div> );
   }
@@ -388,10 +431,10 @@ function ViewJobs() {
               <div style={{ padding: '1.5rem 2rem', flexGrow: 1 }}>
                 <h2 style={{ fontSize: '1.75rem', fontWeight: '700', color: '#2d3748', marginBottom: '0.5rem', textAlign: 'left' }}>{job.title}</h2>
                 <h3 style={{ fontSize: '1.125rem', color: '#718096', marginBottom: '1rem', fontWeight: '500', textAlign: 'left' }}>{job.companyName}</h3>
-                <div style={{ marginBottom: '0.85rem', textAlign: 'left' }}> <span style={{ fontWeight: '600', color: '#4a5568' }}>Education Required: </span> <span style={{ color: '#718096', fontSize: '0.9rem' }}>{Array.isArray(job.education) ? job.education.join(', ') : (job.education || 'Not specified')}</span> </div>
-                <div style={{ marginBottom: '0.85rem', textAlign: 'left' }}> <span style={{ fontWeight: '600', color: '#4a5568' }}>Location: </span> <span style={{ color: '#718096', fontSize: '0.9rem' }}>{job.location || 'Not specified'}</span> </div>
-                <div style={{ marginBottom: '0.85rem', textAlign: 'left' }}> <span style={{ fontWeight: '600', color: '#4a5568' }}>Salary: </span> <span style={{ color: '#718096', fontSize: '0.9rem' }}>{job.salary || 'Not specified'}</span> </div>
-                {job.additionalQualification && job.additionalQualification.length > 0 && ( <div style={{ marginBottom: '0.85rem', textAlign: 'left' }}> <span style={{ fontWeight: '600', color: '#4a5568' }}>Additional Skills: </span> <span style={{ color: '#718096', fontSize: '0.9rem' }}>{job.additionalQualification.join(', ')}</span> </div> )}
+                <div style={{ marginBottom: '0.85rem', textAlign: 'left' }}> <span style={{ fontWeight: '600', color: '#4b5568' }}>Education Required: </span> <span style={{ color: '#718096', fontSize: '0.9rem' }}>{Array.isArray(job.education) ? job.education.join(', ') : (job.education || 'Not specified')}</span> </div>
+                <div style={{ marginBottom: '0.85rem', textAlign: 'left' }}> <span style={{ fontWeight: '600', color: '#4b5568' }}>Location: </span> <span style={{ color: '#718096', fontSize: '0.9rem' }}>{job.location || 'Not specified'}</span> </div>
+                <div style={{ marginBottom: '0.85rem', textAlign: 'left' }}> <span style={{ fontWeight: '600', color: '#4b5568' }}>Salary: </span> <span style={{ color: '#718096', fontSize: '0.9rem' }}>{job.salary || 'Not specified'}</span> </div>
+                {job.additionalQualification && job.additionalQualification.length > 0 && ( <div style={{ marginBottom: '0.85rem', textAlign: 'left' }}> <span style={{ fontWeight: '600', color: '#4b5568' }}>Additional Skills: </span> <span style={{ color: '#718096', fontSize: '0.9rem' }}>{job.additionalQualification.join(', ')}</span> </div> )}
               </div>
               <div style={{ padding: '1.25rem 2rem', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', gap: '1rem', backgroundColor: '#f9fafb' }}>
                 <button onClick={() => handleViewJob(job)} style={{ backgroundColor: '#2563eb', color: '#fff', fontWeight: '700', padding: '0.5rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', boxShadow: '0 3px 6px rgba(37, 99, 235, 0.4)', transition: 'background-color 250ms ease, box-shadow 250ms ease', userSelect: 'none' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1d4ed8'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(29, 78, 216, 0.6)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#2563eb'; e.currentTarget.style.boxShadow = '0 3px 6px rgba(37, 99, 235, 0.4)'; }}>
@@ -399,6 +442,9 @@ function ViewJobs() {
                 </button>
                 <button onClick={() => handleApplyJobClick(job)} style={{ backgroundColor: '#059669', color: '#fff', fontWeight: '700', padding: '0.5rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', boxShadow: '0 3px 6px rgba(5, 150, 105, 0.4)', transition: 'background-color 250ms ease, box-shadow 250ms ease', userSelect: 'none' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#047857'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(4, 120, 87, 0.6)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#059669'; e.currentTarget.style.boxShadow = '0 3px 6px rgba(5, 150, 105, 0.4)'; }}>
                   Apply Now
+                </button>
+                <button onClick={() => handleReportJobClick(job)} style={{ backgroundColor: '#f59e42', color: '#fff', fontWeight: '700', padding: '0.5rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', boxShadow: '0 3px 6px rgba(245, 158, 66, 0.4)', transition: 'background-color 250ms ease, box-shadow 250ms ease', userSelect: 'none' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d97706'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(217, 119, 6, 0.6)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f59e42'; e.currentTarget.style.boxShadow = '0 3px 6px rgba(245, 158, 66, 0.4)'; }}>
+                  Report
                 </button>
               </div>
             </div>
@@ -454,6 +500,27 @@ function ViewJobs() {
       )}
       {showConfirmModal && jobToApply && (
         <ConfirmationModal isOpen={showConfirmModal} onConfirm={handleConfirmApply} onCancel={() => setShowConfirmModal(false)} job={jobToApply} />
+      )}
+      {showReportModal && jobToReport && (
+        <div style={{ position: 'fixed', inset: '0', backgroundColor: 'rgba(26, 32, 44, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: '100' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '1rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', maxWidth: '28rem', width: '100%', padding: '2rem', position: 'relative' }}>
+            <button onClick={() => setShowReportModal(false)} style={{ position: 'absolute', top: '1rem', right: '1rem', color: '#a0aec0', fontSize: '1.875rem', fontWeight: '700', border: 'none', background: 'none', cursor: 'pointer' }} aria-label="Close">&times;</button>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#1a202c', marginBottom: '1rem' }}>
+              Report Job: {jobToReport.title}
+            </h2>
+            <textarea
+              value={reportDescription}
+              onChange={e => setReportDescription(e.target.value)}
+              placeholder="Describe the issue with this job posting..."
+              style={{ width: '100%', minHeight: '100px', borderRadius: '0.5rem', border: '1px solid #e2e8f0', padding: '0.75rem', fontSize: '1rem', marginBottom: '1.5rem', resize: 'vertical' }}
+            />
+            <div style={{ textAlign: 'right' }}>
+              <button onClick={handleReportSubmit} style={{ backgroundColor: '#f59e42', color: '#fff', fontWeight: '700', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', transition: 'background-color 200ms ease-in-out' }}>
+                Submit Report
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

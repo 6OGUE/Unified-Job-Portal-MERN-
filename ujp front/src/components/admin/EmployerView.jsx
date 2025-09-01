@@ -24,7 +24,7 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, itemName }) => {
                       onClick={onConfirm}
                       style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderRadius: '0.375rem', backgroundColor: '#dc3545', color: '#fff', border: 'none', cursor: 'pointer' }}
                   >
-                      Delete
+                      Remove
                   </button>
               </div>
           </div>
@@ -159,7 +159,7 @@ const EmployerView = () => {
                       onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
                       onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
                     >
-                      Delete
+                      Remove
                     </button>
                   </td>
                 </tr>
