@@ -1,30 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { FaBriefcase, FaUserEdit, FaHistory, FaLightbulb, FaUserCircle, FaChevronDown } from "react-icons/fa";
+import { FaBriefcase, FaUserEdit, FaHistory, FaChevronDown } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
-// Assume AuthContext is available and provides 'user' and 'loadingAuth'
 import { useAuth } from "../context/AuthContext";
 
 function EmployeeDashboard() {
-  // Using user data from the authentication context
   const { user, loadingAuth } = useAuth();
   const navigate = useNavigate();
   const [animate, setAnimate] = useState(false);
-
-  // State to manage the open/closed state of the FAQ accordion
   const [openFAQ, setOpenFAQ] = useState(null);
 
   useEffect(() => {
-    // A simple animation trigger for the header
     const timer = setTimeout(() => setAnimate(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
   if (loadingAuth) {
     return (
-      <p className="text-center mt-12 text-gray-700 text-lg">
-        Loading...
-      </p>
+      <p className="text-center mt-12 text-gray-700 text-lg">Loading...</p>
     );
   }
 
@@ -60,13 +52,11 @@ function EmployeeDashboard() {
     },
   ];
 
-  // FAQ data specific to job seekers
   const faqData = [
     {
       question: "How do I update my profile and resume?",
       answer: "You can update your profile and upload a new resume by navigating to the 'Profile' page. Keeping your information current helps our system provide more accurate job recommendations.",
     },
-    
     {
       question: "How do I know if an employer has viewed my application?",
       answer: "The 'Application Tracking' section on your dashboard shows the real-time status of each application. You will see updates like - Accepted ,  Rejected  or  Pending ",
@@ -81,7 +71,6 @@ function EmployeeDashboard() {
     },
   ];
 
-  // Function to handle the accordion toggle
   const handleFAQClick = (index) => {
     setOpenFAQ(openFAQ === index ? null : index);
   };
@@ -113,10 +102,10 @@ function EmployeeDashboard() {
             alignItems: "center",
             justifyContent: "center",
             gap: "10px",
-            fontFamily: 'monospace',
+            fontFamily: "monospace",
           }}
         >
-           Welcome, {user.name}
+          Welcome, {user.name}
         </h1>
         <p
           style={{
@@ -125,7 +114,7 @@ function EmployeeDashboard() {
             opacity: animate ? 1 : 0,
             transform: animate ? "translateY(0)" : "translateY(-10px)",
             transition: "all 0.8s ease 0.2s",
-            fontFamily: 'monospace',
+            fontFamily: "monospace",
           }}
         >
           Here is a quick overview of our features to get you familiar with the platform.
@@ -135,11 +124,7 @@ function EmployeeDashboard() {
       {/* Feature Cards Section */}
       <div className="card-container">
         {features.map((feature, idx) => (
-          <div
-            key={idx}
-            className="card"
-            style={{ background: feature.gradient }}
-          >
+          <div key={idx} className="card" style={{ background: feature.gradient }}>
             <div className="feature-icon">{feature.icon}</div>
             <h2>{feature.title}</h2>
             <p className="short">{feature.shortHint}</p>
@@ -165,7 +150,7 @@ function EmployeeDashboard() {
             fontSize: "2rem",
             color: "#1E90FF",
             marginBottom: "30px",
-            fontFamily: 'monospace',
+            fontFamily: "monospace",
           }}
         >
           Frequently Asked Questions
@@ -204,10 +189,8 @@ function EmployeeDashboard() {
       {/* Combined Styles */}
       <style>
         {`
-          /* Global styles, included for completeness */
           @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Roboto+Mono&display=swap');
 
-          /* Feature Card Styles */
           .card-container {
             display: flex;
             justify-content: center;
@@ -269,7 +252,6 @@ function EmployeeDashboard() {
             100% { transform: translateY(0px); }
           }
           
-          /* FAQ Section Styles */
           .faq-item {
             background: #ffffff;
             border-radius: 12px;
@@ -302,7 +284,6 @@ function EmployeeDashboard() {
             line-height: 1.6;
           }
 
-          /* Responsive adjustments */
           @media (max-width: 768px) {
             .card-container {
               flex-direction: column;
