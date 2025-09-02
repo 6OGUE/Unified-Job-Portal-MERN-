@@ -44,7 +44,7 @@ function EmployerDashboard() {
       shortHint: "Edit and monitor your listings",
       longHint: "Effortlessly create and track all your job postings in one place.",
       icon: <FaClipboardList size={40} color="#FF6347" />,
-      gradient: "linear-gradient(135deg, #ffe0e0, #ffcccb)",
+      gradient: "linear-gradient(135deg, #ffeae0ff, #ffe0cbff)",
     },
     {
       title: "Review Applicants",
@@ -105,7 +105,7 @@ function EmployerDashboard() {
         <h1
           style={{
             fontSize: "2.5rem",
-            color: "#FF6347",
+            color: "#47ff53ff",
             marginBottom: "10px",
             opacity: animate ? 1 : 0,
             transform: animate ? "translateY(0)" : "translateY(-20px)",
@@ -164,7 +164,7 @@ function EmployerDashboard() {
         <h2
           style={{
             fontSize: "2rem",
-            color: "#FF6347",
+            color: "#63ff47ff",
             marginBottom: "30px",
             fontFamily: 'monospace',
           }}

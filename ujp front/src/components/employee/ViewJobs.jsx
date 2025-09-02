@@ -183,9 +183,24 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, job }) => {
           Confirm Application
         </h2>
         {hasAdditionalQualifications && (
-          <div style={{ backgroundColor: '#fffbea', color: '#b7791f', borderRadius: '0.5rem', padding: '0.75rem 1rem', marginBottom: '1rem', fontWeight: '600', fontSize: '1rem', border: '1px solid #f6e05e' }}>
-            <h3 style={{ fontFamily: 'monospace' }}>NOTE:</h3>
-            <span style={{ fontFamily: 'monospace' }}>This job requires certain additional qualifications to be considered. Make sure you have those and have uploaded them in your profile before you continue.</span>
+          <div style={{
+            backgroundColor: '#fffbe6', // Soft yellow shade
+            color: '#7c4700',
+            borderRadius: '0.5rem',
+            padding: '1rem 1.25rem',
+            marginBottom: '1rem',
+            fontWeight: '500',
+            fontSize: '1rem',
+            border: '1px solid #ffe58f',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+            boxShadow: '0 2px 8px rgba(255, 215, 0, 0.08)'
+          }}>
+            <span style={{ fontWeight: '700', color: '#ad6800', fontSize: '1.05rem' }}>Note</span>
+            <span>
+              This position requires additional qualifications. Please ensure you meet these requirements and have uploaded the relevant documents to your profile before proceeding with your application.
+            </span>
           </div>
         )}
         <p style={{ fontSize: '1rem', color: '#4a5568', marginBottom: '1.5rem' }}>

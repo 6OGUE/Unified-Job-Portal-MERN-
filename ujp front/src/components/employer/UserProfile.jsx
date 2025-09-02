@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+const userImg = "http://localhost:5173/icons/user.png"; // Local user image
 
 const UserProfile = () => {
     const { id: userId, applicationId } = useParams();
@@ -63,7 +64,7 @@ const UserProfile = () => {
     };
 
     const styles = {
-        container: { padding: '24px', maxWidth: '800px', margin: '40px auto', fontFamily: "'monospace', Tahoma, Geneva, Verdana, sans-serif", color: '#333', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', minHeight: '1200px' },
+        container: { padding: '24px', maxWidth: '1080px', margin: '40px auto', fontFamily: "'monospace', Tahoma, Geneva, Verdana, sans-serif", color: '#333', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', minHeight: '1200px' },
         header: { textAlign: 'center', marginBottom: '30px' },
         name: { fontSize: '28px', fontWeight: 'bold', margin: 0 },
         email: { fontSize: '16px', color: '#555', marginTop: '4px' },
@@ -92,86 +93,193 @@ const UserProfile = () => {
     if (error) return <div style={{ ...styles.container, color: 'red' }}>Error: {error}</div>;
     if (!userProfile) return <div style={styles.container}>User profile not found.</div>;
 
-    return (
-        <div style={styles.container}>
-            <div style={styles.header}><h1 style={styles.name}>{userProfile.name}</h1><p style={styles.email}>{userProfile.email}</p></div>
-            {userProfile.about && (<div style={styles.section}><h2 style={styles.sectionTitle}>About Me</h2><p style={styles.aboutText}>{userProfile.about}</p></div>)}
-            <div style={styles.section}>
-                <h2 style={styles.sectionTitle}>Personal Information</h2>
-                <div style={styles.infoGrid}>
-                    {userProfile.gender && (<div style={styles.infoItem}><span style={styles.infoLabel}>Gender</span>{userProfile.gender}</div>)}
-                    {userProfile.dateOfBirth && (<div style={styles.infoItem}><span style={styles.infoLabel}>Date of Birth</span>{new Date(userProfile.dateOfBirth).toLocaleDateString()}</div>)}
-                </div>
-            </div>
-            {userProfile.role === 'employee' && (
-                <>
-                    <div style={styles.section}><h2 style={styles.sectionTitle}>Academic Details</h2><div style={styles.infoGrid}>
-                        {userProfile.education && (<div style={styles.infoItem}><span style={styles.infoLabel}>Highest Qualificatison</span>{userProfile.education}</div>)}
-                        {userProfile.cvFilePath && (<div style={styles.infoItem}><span style={styles.infoLabel}>Resume</span><a href={userProfile.cvFilePath} target="_blank" rel="noopener noreferrer" style={styles.fileLink}>View Resume</a></div>)}
-                    </div></div>
-                    {userProfile.certificates && userProfile.certificates.length > 0 && (<div style={styles.section}><h2 style={styles.sectionTitle}>Certificates</h2><ul style={styles.certificateList}>
-                        {userProfile.certificates.map((cert) => (<li key={cert._id} style={styles.certificateItem}><span style={styles.infoLabel}>{cert.title}</span>{cert.filePath && (<a href={cert.filePath} target="_blank" rel="noopener noreferrer" style={styles.fileLink}>View Certificate</a>)}</li>))}
-                    </ul></div>)}
-                </>
+    return (     
+  <div style={styles.container}>
+    <div style={styles.header}>
+      <h1 style={styles.name}>{userProfile.name}</h1>
+
+      {/* User Icon Image just below name */}
+      <div style={{ marginTop: "0.25rem" }}>
+        <img 
+          src="http://localhost:5173/icons/user.png" 
+          alt="User Icon" 
+          style={{ width: "60px", height: "60px" }} 
+        />
+      </div>
+
+      <p style={styles.email}>{userProfile.email}</p>
+    </div>
+
+    {userProfile.about && (
+      <div style={styles.section}>
+        <h2 style={styles.sectionTitle}>About Me</h2>
+        <p style={styles.aboutText}>{userProfile.about}</p>
+      </div>
+    )}
+
+    <div style={styles.section}>
+      <h2 style={styles.sectionTitle}>Personal Information</h2>
+      <div style={styles.infoGrid}>
+        {userProfile.gender && (
+          <div style={styles.infoItem}>
+            <span style={styles.infoLabel}>Gender</span>
+            {userProfile.gender}
+          </div>
+        )}
+        {userProfile.dateOfBirth && (
+          <div style={styles.infoItem}>
+            <span style={styles.infoLabel}>Date of Birth</span>
+            {new Date(userProfile.dateOfBirth).toLocaleDateString()}
+          </div>
+        )}
+      </div>
+    </div>
+
+    {userProfile.role === "employee" && (
+      <>
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>Academic Details</h2>
+          <div style={styles.infoGrid}>
+            {userProfile.education && (
+              <div style={styles.infoItem}>
+                <span style={styles.infoLabel}>Highest Qualification</span>
+                {userProfile.education}
+              </div>
             )}
-            
-            {applicationId && (
-                <div style={{...styles.section, ...styles.actionContainer}}>
-                    <h2 style={styles.sectionTitle}>Application Action</h2>
-                    
-                    {applicationStatus === 'Pending' && (
-                        <div>
-                            <button onClick={() => setApplicationToUpdate({ id: applicationId, status: 'Accepted' })} style={{...styles.actionButton, ...styles.acceptButton}}>Accept Application</button>
-                            <button onClick={() => setApplicationToUpdate({ id: applicationId, status: 'Rejected' })} style={{...styles.actionButton, ...styles.rejectButton}}>Reject Application</button>
-                        </div>
-                    )}
-                    {applicationStatus === 'Accepted' && <div style={{...styles.statusDisplay, ...styles.accepted}}>Application Accepted</div>}
-                    {applicationStatus === 'Rejected' && <div style={{...styles.statusDisplay, ...styles.rejected}}>Application Rejected</div>}
-                </div>
+            {userProfile.cvFilePath && (
+              <div style={styles.infoItem}>
+                <span style={styles.infoLabel}>Resume</span>
+                <a
+                  href={userProfile.cvFilePath}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={styles.fileLink}
+                >
+                  View Resume
+                </a>
+              </div>
             )}
-            
-            {applicationToUpdate && (
-                <div style={styles.modalContainer}>
-                    <div style={styles.modalContent}>
-                        <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem' }}>Confirm Action</h2>
-                        <p style={{ color: '#374151', marginBottom: '1.5rem' }}>Do you really want to {applicationToUpdate.status === 'Accepted' ? 'accept' : 'reject'} this application?</p>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-                            <button
-                                onClick={() => setApplicationToUpdate(null)}
-                                style={{
-                                  padding: '0.5rem 1rem',
-                                  fontSize: '0.875rem',
-                                  borderRadius: '0.375rem',
-                                  backgroundColor: '#4f46e5',
-                                  color: '#fff',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                }}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmUpdateStatus}
-                                style={{
-                                  padding: '0.5rem 1rem',
-                                  fontSize: '0.875rem',
-                                  borderRadius: '0.375rem',
-                                  backgroundColor: '#dc2626',
-                                  color: '#fff',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                }}
-                            >
-                                {/* ✅ Updated: Changed the button text to 'Accept' or 'Reject' */}
-                                {applicationToUpdate.status === 'Accepted' ? 'Accept' : 'Reject'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            <ToastContainer position="top-center" autoClose={3000} />
+          </div>
         </div>
-    );
+
+        {userProfile.certificates && userProfile.certificates.length > 0 && (
+          <div style={styles.section}>
+            <h2 style={styles.sectionTitle}>Certificates</h2>
+            <ul style={styles.certificateList}>
+              {userProfile.certificates.map((cert) => (
+                <li key={cert._id} style={styles.certificateItem}>
+                  <span style={styles.infoLabel}>{cert.title}</span>
+                  {cert.filePath && (
+                    <a
+                      href={cert.filePath}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={styles.fileLink}
+                    >
+                      View Certificate
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </>
+    )}
+
+    {applicationId && (
+      <div style={{ ...styles.section, ...styles.actionContainer }}>
+        <h2 style={styles.sectionTitle}>Application Action</h2>
+
+        {applicationStatus === "Pending" && (
+          <div>
+            <button
+              onClick={() =>
+                setApplicationToUpdate({ id: applicationId, status: "Accepted" })
+              }
+              style={{ ...styles.actionButton, ...styles.acceptButton }}
+            >
+              Accept Application
+            </button>
+            <button
+              onClick={() =>
+                setApplicationToUpdate({ id: applicationId, status: "Rejected" })
+              }
+              style={{ ...styles.actionButton, ...styles.rejectButton }}
+            >
+              Reject Application
+            </button>
+          </div>
+        )}
+
+        {applicationStatus === "Accepted" && (
+          <div style={{ ...styles.statusDisplay, ...styles.accepted }}>
+            Application Accepted
+          </div>
+        )}
+        {applicationStatus === "Rejected" && (
+          <div style={{ ...styles.statusDisplay, ...styles.rejected }}>
+            Application Rejected
+          </div>
+        )}
+      </div>
+    )}
+
+    {applicationToUpdate && (
+      <div style={styles.modalContainer}>
+        <div style={styles.modalContent}>
+          <h2
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: "700",
+              marginBottom: "1rem",
+            }}
+          >
+            Confirm Action
+          </h2>
+          <p style={{ color: "#374151", marginBottom: "1.5rem" }}>
+            Do you really want to{" "}
+            {applicationToUpdate.status === "Accepted" ? "accept" : "reject"} this
+            application?
+          </p>
+          <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
+            <button
+              onClick={() => setApplicationToUpdate(null)}
+              style={{
+                padding: "0.5rem 1rem",
+                fontSize: "0.875rem",
+                borderRadius: "0.375rem",
+                backgroundColor: "#4f46e5",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmUpdateStatus}
+              style={{
+                padding: "0.5rem 1rem",
+                fontSize: "0.875rem",
+                borderRadius: "0.375rem",
+                backgroundColor: "#dc2626",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              {applicationToUpdate.status === "Accepted" ? "Accept" : "Reject"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <ToastContainer position="top-center" autoClose={3000} />
+  </div>
+);
+
 };
 
 export default UserProfile;

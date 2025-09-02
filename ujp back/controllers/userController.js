@@ -11,19 +11,73 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const baseUploadPath = path.join(__dirname, '..', 'uploads');
 
-// Smart PDF verification
-const performSmartVerification = async (fileBuffer, nameToVerify) => {
+// Smart PDF verification with different modes
+const performSmartVerification = async (fileBuffer, nameToVerify, verificationMode = 'nameOnly') => {
     const pdfData = await pdfParse(fileBuffer);
     const pdfText = pdfData.text;
+
     if (!pdfText || pdfText.trim() === '') {
         throw new Error('Could not extract text from the document for verification.');
     }
+
     const normalizeText = (text) =>
-        text.toLowerCase().replace(/[^a-z0-9\s]/gi, ' ').replace(/\s+/g, ' ').trim();
+        text
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
     const normalizedPdfText = normalizeText(pdfText);
     const normalizedNameToVerify = normalizeText(nameToVerify);
+
     if (!normalizedNameToVerify) throw new Error('Name to verify is empty.');
-    return normalizedPdfText.includes(normalizedNameToVerify);
+
+    const nameFound = normalizedPdfText.includes(normalizedNameToVerify);
+
+    // For CV verification, also check keywords
+    let keywordCount = 0;
+    const matchedKeywords = [];
+    
+    if (verificationMode === 'cvVerification') {
+        const keywords = [
+            "experienced", "skills", "team", "management", "responsible",
+            "professional", "leadership", "project", "development", "knowledge",
+            "motivated", "communication", "organized", "results", "success",
+            "training", "customer", "support", "goal", "detail",
+            "strategic", "solution", "collaborative", "technical", "driven",
+            "efficient", "analytical", "problem-solving", "creative", "fast-paced",
+            "initiative", "multitasking", "presentation", "planning", "deadline",
+            "supervised", "achieved", "implemented", "improved", "designed",
+            "budget", "coordination", "negotiation", "performance", "adaptable",
+            "reliable", "hardworking", "self-motivated", "flexible", "independent",
+            "task-oriented", "goal-oriented", "detail-oriented", "decision-making", "organization",
+            "time-management", "dedicated", "resourceful", "innovative", "entrepreneurial",
+            "client", "vendor", "relationship", "execution", "reporting",
+            "productivity", "growth", "efficiency", "stakeholders", "collaboration",
+            "presentation", "data", "analytics", "quality", "optimization",
+            "process", "documentation", "research", "evaluation", "troubleshooting",
+            "implementation", "automation", "testing", "compliance", "regulatory",
+            "marketing", "sales", "finance", "operations", "logistics",
+            "inventory", "negotiated", "resolved", "coordinated", "mentored",
+            "hired", "trained", "reviewed", "created", "launched"
+        ];
+
+        for (const word of keywords) {
+            if (normalizedPdfText.includes(word)) {
+                keywordCount++;
+                matchedKeywords.push(word);
+            }
+        }
+        
+        // Log verification results to server console
+        console.log('🔍 CV Verification Results:');
+        console.log(`📝 Document: ${nameToVerify}'s CV`);
+        console.log(`✅ Name found: ${nameFound}`);
+        console.log(`🔢 Keyword matches: ${keywordCount}/40 (Required: 40+)`);
+        console.log('─'.repeat(100));
+    }
+
+    return { nameFound, keywordCount, matchedKeywords };
 };
 
 // File URL helper
@@ -57,42 +111,71 @@ async function registerEmployer(req, res) {
     const filePathOnDisk = path.join(baseUploadPath, certificateFile.filename);
 
     try {
-        const fileBuffer = fs.readFileSync(filePathOnDisk);
-        if (!(await performSmartVerification(fileBuffer, companyName))) {
-            return res
-                .status(400)
-                .json({ message: 'Verification failed: Company name not found in the certificate.' });
+    const fileBuffer = fs.readFileSync(filePathOnDisk);
+
+    // For employer certificate, only check name (nameOnly mode)
+    const { nameFound, extractedText } = await performSmartVerification(fileBuffer, companyName, 'nameOnly');
+
+    if (!nameFound) {
+        cleanupFile(certificateFile);
+        return res.status(400).json({ message: 'Verification failed: Company name not found in the certificate.' });
+    }
+
+    // Check word match count
+    const commonCertificateWords = [
+        "certificate","of","incorporation","registration","this","is","to","certify","that","the",
+        "company","has","been","registered","under","act","as","per","with","authority",
+        "issued","by","government","pursuant","and","in","accordance","date","number",
+        "official","seal","authorized","signatory","director","office","business","name",
+        "private","limited","public","entity","valid","until","law","rules","provisions",
+        "hereby","incorporated","document","place","given","day","year"
+    ];
+
+    const textLower = (extractedText || "").toLowerCase();
+    let matchCount = 0;
+    commonCertificateWords.forEach(word => {
+        if (textLower.includes(word.toLowerCase())) {
+            matchCount++;
         }
+    });
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User with this email already exists.' });
-        }
-
-        const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
-        const certificateFilePath = saveFileAndGetUrl(certificateFile, req);
-
-        const user = new User({
-            name,
-            email,
-            password,
-            role,
-            companyName,
-            location,
-            establishedDate: establishedDate ? new Date(establishedDate) : undefined,
-            certificateHash: fileHash,
-            certificateFilePath: certificateFilePath,
+    if (matchCount < 25) {
+        cleanupFile(certificateFile);
+        return res.status(400).json({
+            message: `Verification failed: Certificate does not appear valid.`
         });
+    }
 
-        await user.save();
-        res.status(201).json({ message: 'Employer registered successfully.' });
-    } catch (error) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        cleanupFile(certificateFile);
+        return res.status(400).json({ message: 'User with this email already exists.' });
+    }
+
+    const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+    const certificateFilePath = saveFileAndGetUrl(certificateFile, req);
+
+    const user = new User({
+        name,
+        email,
+        password,
+        role,
+        companyName,
+        location,
+        establishedDate: establishedDate ? new Date(establishedDate) : undefined,
+        certificateHash: fileHash,
+        certificateFilePath: certificateFilePath,
+    });
+
+    await user.save();
+    res.status(201).json({ message: 'Employer registered successfully.' });
+}
+ catch (error) {
         console.error('Employer Registration Error:', error);
+        cleanupFile(certificateFile);
         res
             .status(500)
             .json({ message: error.message || 'Server error during employer registration.' });
-    } finally {
-        cleanupFile(certificateFile);
     }
 }
 
@@ -135,11 +218,25 @@ async function registerJobSeeker(req, res) {
 
     try {
         const cvFileBuffer = fs.readFileSync(cvFilePathOnDisk);
-        if (!(await performSmartVerification(cvFileBuffer, name))) {
+        // For job seeker CV, check both name and keywords (cvVerification mode)
+        const { nameFound, keywordCount, matchedKeywords } = await performSmartVerification(cvFileBuffer, name, 'cvVerification');
+
+        // Check name first
+        if (!nameFound) {
             cleanupFiles();
-            return res
-                .status(400)
-                .json({ message: 'Verification failed: Your name was not found in the uploaded CV.' });
+            return res.status(400).json({ 
+                message: 'Verification failed: Your name was not found in the CV. Please ensure your CV contains your full name.',
+                debug: { nameFound, keywordCount, matchedKeywords: matchedKeywords?.slice(0, 10) } // First 10 keywords only
+            });
+        }
+
+        // Then check keyword count
+        if (keywordCount < 40) {
+            cleanupFiles();
+            return res.status(400).json({ 
+                message: 'Verification failed: The uploaded document does not appear to be a valid CV. Please upload a proper CV with professional content.',
+                debug: { nameFound, keywordCount, requiredCount: 40, matchedKeywords: matchedKeywords?.slice(0, 10) }
+            });
         }
 
         const existingUser = await User.findOne({ email });
@@ -307,11 +404,25 @@ export const uploadCV = async (req, res) => {
         }
 
         const fileBuffer = fs.readFileSync(path.join(baseUploadPath, file.filename));
-        if (!(await performSmartVerification(fileBuffer, user.name))) {
+        // For CV upload, check both name and keywords (cvVerification mode)
+        const { nameFound, keywordCount, matchedKeywords } = await performSmartVerification(fileBuffer, user.name, 'cvVerification');
+
+        // Check name first
+        if (!nameFound) {
             cleanupFile();
-            return res
-                .status(400)
-                .json({ message: `Verification failed: Your name was not found in the new CV.` });
+            return res.status(400).json({ 
+                message: 'Verification failed: Your name was not found in the CV. Please ensure your CV contains your full name.',
+                debug: { nameFound, keywordCount, matchedKeywords: matchedKeywords?.slice(0, 10) }
+            });
+        }
+
+        // Then check keyword count
+        if (keywordCount < 40) {
+            cleanupFile();
+            return res.status(400).json({ 
+                message: 'Verification failed: The uploaded document does not appear to be a valid CV. Please upload a proper CV with professional content.',
+                debug: { nameFound, keywordCount, requiredCount: 40, matchedKeywords: matchedKeywords?.slice(0, 10) }
+            });
         }
 
         // Delete old CV if it exists
@@ -368,7 +479,10 @@ export const addCertificates = async (req, res) => {
             const filePathOnDisk = path.join(baseUploadPath, file.filename);
             const fileBuffer = fs.readFileSync(filePathOnDisk);
 
-            if (!(await performSmartVerification(fileBuffer, user.name))) {
+            // For certificates, only check name (nameOnly mode)
+            const { nameFound } = await performSmartVerification(fileBuffer, user.name, 'nameOnly');
+
+            if (!nameFound) {
                 cleanupFiles();
                 return res.status(400).json({
                     message: `Verification failed: Your name was not found in the certificate '${file.originalname}'.`,
@@ -437,28 +551,28 @@ export const deleteCertificate = async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'User not found.' });
 
-        const cert = user.certificates.id(certId);
-        if (!cert) return res.status(404).json({ message: 'Certificate not found.' });
+        const certificateIndex = user.certificates.findIndex((c) => c._id.toString() === certId);
+        if (certificateIndex === -1) return res.status(404).json({ message: 'Certificate not found.' });
 
-        const certFilename = cert.filePath.split('/').pop();
-        const certPath = path.join(baseUploadPath, certFilename);
-        if (fs.existsSync(certPath)) {
-            try {
-                fs.unlinkSync(certPath);
-            } catch (e) {
-                console.error('Failed to delete cert file:', e);
+        // Remove certificate file from server
+        const certificateFilePath = user.certificates[certificateIndex].filePath;
+        if (certificateFilePath) {
+            const fileName = certificateFilePath.split('/').pop();
+            const filePathOnDisk = path.join(baseUploadPath, fileName);
+            if (fs.existsSync(filePathOnDisk)) {
+                try {
+                    fs.unlinkSync(filePathOnDisk);
+                } catch (e) {
+                    console.error('Error deleting certificate file:', e);
+                }
             }
         }
 
-        cert.deleteOne();
+        user.certificates.splice(certificateIndex, 1);
         await user.save();
-        res.json({
-            success: true,
-            message: 'Certificate deleted successfully.',
-            certificates: user.certificates,
-        });
+        res.json({ success: true, message: 'Certificate deleted successfully.' });
     } catch (err) {
         console.error('Error deleting certificate:', err);
-        res.status(500).json({ message: 'Server error.' });
+        res.status(500).json({ message: 'Error deleting certificate.' });
     }
 };

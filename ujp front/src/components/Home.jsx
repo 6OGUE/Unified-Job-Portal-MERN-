@@ -23,7 +23,7 @@ const topCompanies = [
 
 const reviews = [
   { name: "Alice", text: "Found my dream job in just 3 days!", rating: 5 },
-  { name: "Bob", text: "The matching system is so smart, saved me tons of time.", rating: 4 },
+  { name: "Bob", text: "Hats off to the team for creating such an amazing website", rating: 4 },
   { name: "Charlie", text: "Employers reached out to me instantly, amazing experience.", rating: 5 },
 ];
 
@@ -88,7 +88,7 @@ function Home() {
           <div className="section about" style={{ color:'#fff', textAlign:'center', padding:'0',marginTop:'85px' }}>
             <h2 style={{ fontSize:'32px', marginBottom:'15px', color:'#00C9FF' }}>About Us</h2>
             <p style={{ fontSize:'16px', maxWidth:'800px', margin:'auto', color:'#ccc' }}>
-              Unified Job Portal matches talent with roles that fit their skills and experience, so you can focus less on searching and more on growing your career.
+              Unified Job Portal makes the process of finding jobs and hiring talent much easier and more unified, helping users connect with opportunities without the usual hassle.
             </p>
           </div>
         </div>
