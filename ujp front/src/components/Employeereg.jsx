@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import './component.css';
+import BufferingLoader from "./BufferingLoader";
 
 async function registerUser(formData) {
   try {
@@ -7,7 +8,6 @@ async function registerUser(formData) {
       method: 'POST',
       body: formData,
     });
-    // Check if the response is OK (status 200-299)
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -15,22 +15,23 @@ async function registerUser(formData) {
     return response.json();
   } catch (error) {
     console.error("Error during registerUser fetch:", error);
-    throw error; // Re-throw to be caught by the handleSubmit's try-catch
+    throw error;
   }
 }
 
 export default function JobSeekerReg() {
   const [formData, setFormData] = useState({
-    name: "", dob: "", gender: "", about: "", email: "", password: ""
+    name: "", dob: "", gender: "", about: "", email: "", password: "", confirmPassword: ""
   });
 
   const [dobInputType, setDobInputType] = useState('text');
   const [cv, setCv] = useState(null);
   const [education, setEducation] = useState("");
-  // Ensure certificate structure is consistent
   const [certificates, setCertificates] = useState([{ id: Date.now(), title: "", file: null }]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showBuffering, setShowBuffering] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,46 +64,71 @@ export default function JobSeekerReg() {
     setCertificates(prev => [...prev, { id: Date.now(), title: "", file: null }]);
   };
 
+  const commonPasswords = [
+    "password", "123456", "12345678", "qwerty", "abc123", "111111", "123123", "password1", "1234", "iloveyou",
+    "admin", "welcome", "letmein", "monkey", "login", "starwars", "dragon", "passw0rd", "master", "hello"
+  ];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); // Clear previous messages
+    setMessage("");
     setLoading(true);
+    setShowBuffering(true);
 
-    const data = new FormData();
-
-    // Append standard form data
-    data.append("name", formData.name);
-    data.append("dateOfBirth", formData.dob); // Use dateOfBirth as per typical Mongoose schemas for clarity
-    data.append("gender", formData.gender);
-    data.append("about", formData.about);
-    data.append("education", education);
-    data.append("email", formData.email);
-    data.append("password", formData.password);
-    data.append("role", "employee"); // This is crucial for distinguishing roles on the backend
-
-    // Append CV if available
-    if (cv) {
-      data.append("cv", cv);
-    }
-
-    // Append certificates
-    certificates.forEach((cert, index) => {
-      // Only append if both title and file exist
-      if (cert.title && cert.file) {
-        data.append(`certificates[${index}][title]`, cert.title); // Use array notation for backend processing
-        data.append(`certificates[${index}][file]`, cert.file);
-      }
-    });
-
-    try {
-      const result = await registerUser(data);
-      setMessage(result.message || "Registration successful!"); // Positive message on success
-    } catch (error) {
-      console.error("Registration error:", error);
-      setMessage("Error: " + (error.message || "An unexpected error occurred during registration."));
-    } finally {
+    // Common password check
+    if (commonPasswords.includes(formData.password)) {
       setLoading(false);
+      setShowBuffering(false);
+      setMessage("Error: Please choose a stronger password. Common passwords are not allowed.");
+      setShowModal(true);
+      return;
     }
+
+    // Confirm password check
+    if (formData.password !== formData.confirmPassword) {
+      setLoading(false);
+      setShowBuffering(false);
+      setMessage("Error: Passwords do not match.");
+      setShowModal(true);
+      return;
+    }
+
+    setTimeout(async () => {
+      setShowBuffering(false);
+
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("dateOfBirth", formData.dob);
+      data.append("gender", formData.gender);
+      data.append("about", formData.about);
+      data.append("education", education);
+      data.append("email", formData.email);
+      data.append("password", formData.password);
+      data.append("role", "employee");
+
+      if (cv) {
+        data.append("cv", cv);
+      }
+
+      certificates.forEach((cert, index) => {
+        if (cert.title && cert.file) {
+          data.append(`certificates[${index}][title]`, cert.title);
+          data.append(`certificates[${index}][file]`, cert.file);
+        }
+      });
+
+      try {
+        const result = await registerUser(data);
+        setMessage(result.message || "Registration successful!");
+        setShowModal(true);
+      } catch (error) {
+        console.error("Registration error:", error);
+        setMessage("Error: " + (error.message || "An unexpected error occurred during registration."));
+        setShowModal(true);
+      } finally {
+        setLoading(false);
+      }
+    }, 3000);
   };
 
   const sectionHeaderStyle = {
@@ -113,12 +139,12 @@ export default function JobSeekerReg() {
 
   return (
     <div className="register-container">
+      {showBuffering && <BufferingLoader onFinish={() => setShowBuffering(false)} />}
       <h2 style={{ marginBottom: '40px', textAlign: 'center', fontFamily: 'monospace', fontSize: '30px' }}>
         Job Seeker Registration
       </h2>
 
       <form onSubmit={handleSubmit} className="register-form" encType="multipart/form-data">
-
         <h3 style={sectionHeaderStyle}>Account Credentials</h3>
         <input
           type="email"
@@ -133,6 +159,14 @@ export default function JobSeekerReg() {
           name="password"
           placeholder="Password"
           value={formData.password}
+          onChange={handleChange}
+          required
+        />
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          value={formData.confirmPassword}
           onChange={handleChange}
           required
         />
@@ -270,14 +304,32 @@ export default function JobSeekerReg() {
         </button>
       </form>
 
-      {message && (
-        <p className="message" style={{
-          color: message.startsWith("Error") ? 'red' : 'green',
-          textAlign: 'center',
-          marginTop: '20px'
-        }}>
-          {message}
-        </p>
+      {/* Modal with fade-in/out */}
+      {showModal && (
+        <div className={`modal-overlay ${showModal ? "show" : ""}`}>
+          <div className="modal-box">
+            <h3 style={{
+              color: message.startsWith("Error") ? "red" : "green",
+              marginBottom: "15px"
+            }}>
+              {message.startsWith("Error") ? "Error" : "Success"}
+            </h3>
+            <p style={{ marginBottom: "20px", color: "#333" }}>{message}</p>
+            <button
+              onClick={() => setShowModal(false)}
+              style={{
+                padding: "8px 16px",
+                border: "none",
+                borderRadius: "5px",
+                backgroundColor: "#005fcc",
+                color: "white",
+                cursor: "pointer"
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

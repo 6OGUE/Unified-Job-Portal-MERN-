@@ -111,64 +111,66 @@ async function registerEmployer(req, res) {
     const filePathOnDisk = path.join(baseUploadPath, certificateFile.filename);
 
     try {
-    const fileBuffer = fs.readFileSync(filePathOnDisk);
+        const fileBuffer = fs.readFileSync(filePathOnDisk);
 
-    // For employer certificate, only check name (nameOnly mode)
-    const { nameFound, extractedText } = await performSmartVerification(fileBuffer, companyName, 'nameOnly');
+        // For employer certificate, only check name (nameOnly mode)
+        const { nameFound } = await performSmartVerification(fileBuffer, companyName, 'nameOnly');
+        const pdfData = await pdfParse(fileBuffer);
+        const extractedText = pdfData.text;
 
-    if (!nameFound) {
-        cleanupFile(certificateFile);
-        return res.status(400).json({ message: 'Verification failed: Company name not found in the certificate.' });
-    }
-
-    // Check word match count
-    const commonCertificateWords = [
-        "certificate","of","incorporation","registration","this","is","to","certify","that","the",
-        "company","has","been","registered","under","act","as","per","with","authority",
-        "issued","by","government","pursuant","and","in","accordance","date","number",
-        "official","seal","authorized","signatory","director","office","business","name",
-        "private","limited","public","entity","valid","until","law","rules","provisions",
-        "hereby","incorporated","document","place","given","day","year"
-    ];
-
-    const textLower = (extractedText || "").toLowerCase();
-    let matchCount = 0;
-    commonCertificateWords.forEach(word => {
-        if (textLower.includes(word.toLowerCase())) {
-            matchCount++;
+        if (!nameFound) {
+            cleanupFile(certificateFile);
+            return res.status(400).json({ message: 'Verification failed: Company name not found in the certificate.' });
         }
-    });
 
-    if (matchCount < 25) {
-        cleanupFile(certificateFile);
-        return res.status(400).json({
-            message: `Verification failed: Certificate does not appear valid.`
+        // Check word match count
+        const commonCertificateWords = [
+            "certificate","of","incorporation","registration","this","is","to","certify","that","the",
+            "company","has","been","registered","under","act","as","per","with","authority",
+            "issued","by","government","pursuant","and","in","accordance","date","number",
+            "official","seal","authorized","signatory","director","office","business","name",
+            "private","limited","public","entity","valid","until","law","rules","provisions",
+            "hereby","incorporated","document","place","given","day","year"
+        ];
+
+        const textLower = (extractedText || "").toLowerCase();
+        let matchCount = 0;
+        commonCertificateWords.forEach(word => {
+            if (textLower.includes(word.toLowerCase())) {
+                matchCount++;
+            }
         });
-    }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        cleanupFile(certificateFile);
-        return res.status(400).json({ message: 'User with this email already exists.' });
-    }
+        if (matchCount < 25) {
+            cleanupFile(certificateFile);
+            return res.status(400).json({
+                message: `Verification failed: Certificate does not appear valid.`
+            });
+        }
 
-    const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
-    const certificateFilePath = saveFileAndGetUrl(certificateFile, req);
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            cleanupFile(certificateFile);
+            return res.status(400).json({ message: 'User with this email already exists.' });
+        }
 
-    const user = new User({
-        name,
-        email,
-        password,
-        role,
-        companyName,
-        location,
-        establishedDate: establishedDate ? new Date(establishedDate) : undefined,
-        certificateHash: fileHash,
-        certificateFilePath: certificateFilePath,
-    });
+        const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+        const certificateFilePath = saveFileAndGetUrl(certificateFile, req);
 
-    await user.save();
-    res.status(201).json({ message: 'Employer registered successfully.' });
+        const user = new User({
+            name,
+            email,
+            password,
+            role,
+            companyName,
+            location,
+            establishedDate: establishedDate ? new Date(establishedDate) : undefined,
+            certificateHash: fileHash,
+            certificateFilePath: certificateFilePath,
+        });
+
+        await user.save();
+        res.status(201).json({ message: 'Employer registered successfully.' });
 }
  catch (error) {
         console.error('Employer Registration Error:', error);
@@ -226,7 +228,7 @@ async function registerJobSeeker(req, res) {
             cleanupFiles();
             return res.status(400).json({ 
                 message: 'Verification failed: Your name was not found in the CV. Please ensure your CV contains your full name.',
-                debug: { nameFound, keywordCount, matchedKeywords: matchedKeywords?.slice(0, 10) } // First 10 keywords only
+                debug: { nameFound, keywordCount, matchedKeywords: matchedKeywords?.slice(0, 10) }
             });
         }
 
@@ -245,19 +247,30 @@ async function registerJobSeeker(req, res) {
             return res.status(400).json({ message: 'User with this email already exists.' });
         }
 
+        // Validate all certificates: name must be found in each
         const certificateFiles = allUploadedFiles.filter((f) => f.fieldname.startsWith('certificates['));
-        const certificateRecords = certificateFiles.map((certFile) => {
+        const certificateRecords = [];
+        for (const certFile of certificateFiles) {
+            const certFilePathOnDisk = path.join(baseUploadPath, certFile.filename);
+            const certBuffer = fs.readFileSync(certFilePathOnDisk);
+            const { nameFound: certNameFound } = await performSmartVerification(certBuffer, name, 'nameOnly');
+            if (!certNameFound) {
+                cleanupFiles();
+                return res.status(400).json({
+                    message: `Verification failed: Your name was not found in the certificate '${certFile.originalname}'. Registration failed.`,
+                });
+            }
             const indexMatch = certFile.fieldname.match(/\[(\d+)\]/);
             const certIndex = indexMatch ? parseInt(indexMatch[1], 10) : null;
             const certTitle =
                 (certIndex !== null && req.body.certificates?.[certIndex]?.title) ||
                 'Untitled Certificate';
-            return {
+            certificateRecords.push({
                 title: certTitle,
                 filePath: saveFileAndGetUrl(certFile, req),
                 mimetype: certFile.mimetype,
-            };
-        });
+            });
+        }
 
         const user = new User({
             name,

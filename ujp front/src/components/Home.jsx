@@ -68,14 +68,37 @@ function Home() {
         .stat-icon { font-size:50px; margin-bottom:15px; }
         .counter { font-size:28px; font-weight:bold; }
         .about, .companies, .reviews { text-align:center; max-width:1200px; margin:auto; }
-        .company-carousel { display:flex; gap:20px; overflow-x:auto; padding:6px 0; justify-content:center; align-items:center; }
+        .companies { 
+          text-align:center; 
+          max-width:1200px; 
+          margin:auto; 
+          overflow-x:hidden; /* add this line */
+        }
+        .company-carousel { 
+          display:flex; 
+          gap:20px; 
+          overflow:hidden; /* changed from overflow-x:hidden to overflow:hidden */
+          padding:6px 0; 
+          justify-content:center; 
+          align-items:center; 
+          width:100%; 
+          max-width:100vw; /* add this line */
+          box-sizing:border-box; 
+          scrollbar-width: none; /* Firefox */
+        }
+        .company-carousel::-webkit-scrollbar { 
+          display: none; /* Chrome, Safari, Opera */
+        }
         .company-card { flex:0 0 auto; width:140px; height:80px; display:flex; justify-content:center; align-items:center; background:rgba(255,255,255,0.05); border-radius:15px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor:pointer; }
         .company-card:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 0 25px rgba(255,255,255,0.2); }
         .review-card { background: rgba(255,255,255,0.05); border-radius:20px; padding:20px 18px; max-width:320px; margin:15px; transition: transform 0.3s ease, box-shadow 0.3s ease; cursor:pointer; display:inline-block; }
         .review-card:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 0 35px rgba(255,255,255,0.2); }
+        /* REMOVE or COMMENT OUT these lines to hide the artificial scrollbar */
+        /*
         ::-webkit-scrollbar { height:6px; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius:3px; }
         ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        */
       `}</style>
 
       <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', width:'100%' }}>
