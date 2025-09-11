@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Styles object for the new sidebar and its components
 const styles = {
   filterButtonContainer: {
     display: 'flex',
@@ -36,6 +35,7 @@ const styles = {
     gap: '20px',
     transform: 'translateX(100%)',
     transition: 'transform 0.3s ease-in-out',
+    overflowY: 'auto',
   },
   sidebarOpen: {
     transform: 'translateX(0)',
@@ -76,7 +76,7 @@ const styles = {
   },
   applyFiltersBtn: {
     padding: '12px 15px',
-    marginTop: '20px',
+    marginTop: '0px',
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
@@ -85,6 +85,20 @@ const styles = {
     fontWeight: 700,
     fontSize: '1rem',
     transition: 'background-color 0.2s',
+    minWidth: '120px',
+  },
+  resetButton: {
+    padding: '12px 15px',
+    marginTop: '0px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    backgroundColor: '#f7fafc',
+    color: '#4a5568',
+    fontWeight: 700,
+    fontSize: '0.95rem',
+    transition: 'background-color 0.2s',
+    minWidth: '120px',
   },
   overlay: {
     position: 'fixed',
@@ -99,33 +113,67 @@ const styles = {
     opacity: 1,
     visibility: 'visible',
   },
+  filterFooter: {
+    position: 'sticky',
+    bottom: 0,
+    display: 'flex',
+    gap: '0.75rem',
+    paddingTop: '12px',
+    paddingBottom: '12px',
+    borderTop: '1px solid #e2e8f0',
+    backgroundColor: '#ffffff',
+    justifyContent: 'flex-start',
+  },
 };
 
-// The new FilterComponent, now styled as a sidebar using the styles object
 const FilterComponent = ({ isOpen, onClose, onFilterChange }) => {
   const [location, setLocation] = useState('');
   const [role, setRole] = useState('');
   const [salary, setSalary] = useState('');
+  const [showAdditionalSkills, setShowAdditionalSkills] = useState('all');
 
   const handleApplyFilters = () => {
-    onFilterChange({ location, role, salary });
+    const additional =
+      showAdditionalSkills === 'all' ? null : showAdditionalSkills === 'yes';
+    onFilterChange({
+      location,
+      role,
+      salary,
+      showAdditionalSkills: additional,
+    });
     onClose();
+  };
+
+  const handleResetFilters = () => {
+    setLocation('');
+    setRole('');
+    setSalary('');
+    setShowAdditionalSkills('all');
+    onFilterChange({ location: '', role: '', salary: '', showAdditionalSkills: null });
   };
 
   return (
     <>
-      <div 
-        style={{ ...styles.overlay, ...(isOpen ? styles.overlayVisible : {}) }} 
+      <div
+        style={{ ...styles.overlay, ...(isOpen ? styles.overlayVisible : {}) }}
         onClick={onClose}
       ></div>
       <div style={{ ...styles.filterSidebar, ...(isOpen ? styles.sidebarOpen : {}) }}>
         <div style={styles.sidebarHeader}>
           <h3 style={styles.sidebarTitle}>Filters</h3>
-          <button onClick={onClose} style={styles.closeBtn}>&times;</button>
+          <button onClick={onClose} style={styles.closeBtn} aria-label="Close filters">
+            &times;
+          </button>
         </div>
+
         <div style={styles.filterGroup}>
           <label htmlFor="locationFilter" style={styles.filterLabel}>Location:</label>
-          <select id="locationFilter" value={location} onChange={(e) => setLocation(e.target.value)} style={styles.filterSelect}>
+          <select
+            id="locationFilter"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            style={styles.filterSelect}
+          >
             <option value="">All Cities</option>
             <option value="Bangalore">Bangalore</option>
             <option value="Hyderabad">Hyderabad</option>
@@ -139,9 +187,15 @@ const FilterComponent = ({ isOpen, onClose, onFilterChange }) => {
             <option value="Delhi">Delhi</option>
           </select>
         </div>
+
         <div style={styles.filterGroup}>
           <label htmlFor="roleFilter" style={styles.filterLabel}>Job Role:</label>
-          <select id="roleFilter" value={role} onChange={(e) => setRole(e.target.value)} style={styles.filterSelect}>
+          <select
+            id="roleFilter"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            style={styles.filterSelect}
+          >
             <option value="">All Roles</option>
             <option value="Software Engineer">Software Engineer</option>
             <option value="Data Scientist">Data Scientist</option>
@@ -155,24 +209,49 @@ const FilterComponent = ({ isOpen, onClose, onFilterChange }) => {
             <option value="Project Manager">Project Manager</option>
           </select>
         </div>
+
         <div style={styles.filterGroup}>
           <label htmlFor="salaryFilter" style={styles.filterLabel}>Salary (LPA):</label>
-          <select id="salaryFilter" value={salary} onChange={(e) => setSalary(e.target.value)} style={styles.filterSelect}>
+          <select
+            id="salaryFilter"
+            value={salary}
+            onChange={(e) => setSalary(e.target.value)}
+            style={styles.filterSelect}
+          >
             <option value="">All Salaries</option>
             <option value="lt7">Less than 7 LPA</option>
             <option value="7-15">7 LPA to 15 LPA</option>
             <option value="gt15">15 LPA+</option>
           </select>
         </div>
-        <button onClick={handleApplyFilters} style={styles.applyFiltersBtn}>Apply Filters</button>
+
+        <div style={styles.filterGroup}>
+          <label style={styles.filterLabel}>Additional Skills:</label>
+          <select
+            value={showAdditionalSkills}
+            onChange={(e) => setShowAdditionalSkills(e.target.value)}
+            style={styles.filterSelect}
+          >
+            <option value="all">All</option>
+            <option value="yes">I have additional skills</option>
+            <option value="no">I don't have additional skills</option>
+          </select>
+        </div>
+
+        <div style={styles.filterFooter}>
+          <button onClick={handleApplyFilters} style={styles.applyFiltersBtn}>
+            Apply Filters
+          </button>
+          <button onClick={handleResetFilters} style={styles.resetButton}>
+            Reset
+          </button>
+        </div>
       </div>
     </>
   );
 };
 
-
-// Your original ConfirmationModal component
-const ConfirmationModal = ({ isOpen, onConfirm, onCancel, job }) => {
+const ConfirmationModal = ({ isOpen, onConfirm, onCancel, job, applyingJobId }) => {
   if (!isOpen) return null;
   const hasAdditionalQualifications =
     Array.isArray(job.additionalQualification) && job.additionalQualification.length > 0;
@@ -184,7 +263,7 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, job }) => {
         </h2>
         {hasAdditionalQualifications && (
           <div style={{
-            backgroundColor: '#fffbe6', // Soft yellow shade
+            backgroundColor: '#fffbe6',
             color: '#7c4700',
             borderRadius: '0.5rem',
             padding: '1rem 1.25rem',
@@ -210,15 +289,29 @@ const ConfirmationModal = ({ isOpen, onConfirm, onCancel, job }) => {
           <button onClick={onCancel} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0', backgroundColor: '#f7fafc', cursor: 'pointer', fontWeight: '600', color: '#4a5568', transition: 'all 200ms ease-in-out' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#edf2f7'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f7fafc'}>
             Cancel
           </button>
-          <button onClick={onConfirm} style={{ padding: '0.75rem 1.5rem', borderRadius: '0.5rem', border: 'none', backgroundColor: '#059669', color: '#ffffff', cursor: 'pointer', fontWeight: '700', transition: 'all 200ms ease-in-out' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#047857'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#059669'}>
-            Apply
+          <button
+            onClick={onConfirm}
+            disabled={applyingJobId === job._id}
+            style={{
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              backgroundColor: applyingJobId === job._id ? '#064e3b' : '#059669',
+              color: '#ffffff',
+              cursor: applyingJobId === job._id ? 'not-allowed' : 'pointer',
+              fontWeight: '700',
+              transition: 'all 200ms ease-in-out'
+            }}
+            onMouseEnter={(e) => { if (applyingJobId !== job._id) e.currentTarget.style.backgroundColor = '#047857'; }}
+            onMouseLeave={(e) => { if (applyingJobId !== job._id) e.currentTarget.style.backgroundColor = '#059669'; }}
+          >
+            {applyingJobId === job._id ? 'Applying...' : 'Apply'}
           </button>
         </div>
       </div>
     </div>
   );
 };
-
 
 function ViewJobs() {
   const [isFilterOpen, setFilterOpen] = useState(false);
@@ -234,10 +327,22 @@ function ViewJobs() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [jobToReport, setJobToReport] = useState(null);
   const [reportDescription, setReportDescription] = useState('');
-  
+  const [applyingJobId, setApplyingJobId] = useState(null);
+
+  // persisted applied job ids (strings) — kept in state for quick checks
+  const [appliedJobIds, setAppliedJobIds] = useState([]); // array of job._id
 
   const getToken = () => {
     return localStorage.getItem('token');
+  };
+
+  // helper to persist applied ids to localStorage
+  const persistAppliedIds = (idsArray) => {
+    try {
+      localStorage.setItem('appliedJobs', JSON.stringify(Array.from(new Set(idsArray))));
+    } catch (err) {
+      console.warn('Failed to persist appliedJobs to localStorage', err);
+    }
   };
 
   useEffect(() => {
@@ -250,7 +355,9 @@ function ViewJobs() {
         setLoading(false);
         return;
       }
+
       try {
+        // 1) fetch profile
         const userResponse = await fetch('/api/users/profile', { headers: { 'Authorization': `Bearer ${token}` } });
         if (!userResponse.ok) {
           const errorData = await userResponse.json();
@@ -268,14 +375,61 @@ function ViewJobs() {
           return;
         }
         setEmployeeData(userData);
+
+        // 2) fetch jobs
         const jobsResponse = await fetch('/api/jobs', { headers: { 'Authorization': `Bearer ${token}` } });
         if (!jobsResponse.ok) {
           const errorData = await jobsResponse.json();
           throw new Error(errorData.message || `Failed to fetch jobs: ${jobsResponse.status}`);
         }
         const jobsData = await jobsResponse.json();
-        setJobs(jobsData);
-        setFilteredJobs(jobsData);
+
+        // 3) load applied ids from localStorage
+        let localApplied = [];
+        try {
+          const raw = localStorage.getItem('appliedJobs');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) localApplied = parsed;
+          }
+        } catch (err) {
+          console.warn('Error parsing appliedJobs from localStorage', err);
+        }
+
+        // 4) (optional) try fetching user's applications from backend to get authoritative applied list
+        //    if your backend returns applications as array with jobId fields, we'll extract them.
+        let serverApplied = [];
+        try {
+          const appsResp = await fetch('/api/applications', { headers: { 'Authorization': `Bearer ${token}` } });
+          if (appsResp.ok) {
+            const appsData = await appsResp.json();
+            if (Array.isArray(appsData)) {
+              // attempt to extract jobId in a few common shapes
+              serverApplied = appsData
+                .map(a => (a.jobId ? a.jobId : (a.job && (a.job._id || a.job.id) ? (a.job._id || a.job.id) : null)))
+                .filter(Boolean);
+            }
+          } else {
+            // if endpoint doesn't exist or returns error, ignore and fallback to localStorage
+          }
+        } catch (err) {
+          // network error or endpoint not present — ignore and continue with localApplied
+        }
+
+        // merge serverApplied and localApplied
+        const mergedSet = new Set([...(localApplied || []), ...(serverApplied || [])]);
+        const mergedApplied = Array.from(mergedSet);
+
+        // persist merged list back to localStorage (so local and server stay in sync client-side)
+        persistAppliedIds(mergedApplied);
+
+        // store applied IDs in state
+        setAppliedJobIds(mergedApplied);
+
+        // filter out applied jobs from the displayed list
+        const filteredOutApplied = (jobsData || []).filter(j => !mergedSet.has(j._id));
+        setJobs(filteredOutApplied);
+        setFilteredJobs(filteredOutApplied);
       } catch (err) {
         setError(`Error: ${err.message}`);
         console.error('Error fetching data:', err);
@@ -283,13 +437,15 @@ function ViewJobs() {
         setLoading(false);
       }
     };
+
     fetchEmployeeDataAndJobs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFilterChange = (filters) => {
-    let tempJobs = [...jobs];
+    let tempJobs = [...jobs]; // jobs already exclude applied jobs
     if (filters.location) {
-      tempJobs = tempJobs.filter(job => 
+      tempJobs = tempJobs.filter(job =>
         job.location && job.location.toLowerCase() === filters.location.toLowerCase()
       );
     }
@@ -312,6 +468,11 @@ function ViewJobs() {
         }
       });
     }
+    if (filters.showAdditionalSkills === true) {
+      tempJobs = tempJobs.filter(job => Array.isArray(job.additionalQualification) && job.additionalQualification.length > 0);
+    } else if (filters.showAdditionalSkills === false) {
+      tempJobs = tempJobs.filter(job => !Array.isArray(job.additionalQualification) || job.additionalQualification.length === 0);
+    }
     setFilteredJobs(tempJobs);
   };
 
@@ -326,18 +487,25 @@ function ViewJobs() {
   };
 
   const handleConfirmApply = async () => {
-    setShowConfirmModal(false);
     if (!jobToApply) return;
+    if (applyingJobId) return; // prevent duplicates
+
     const job = jobToApply;
     const token = getToken();
     if (!token) {
       toast.error('You must be logged in to apply for jobs.');
+      setShowConfirmModal(false);
       return;
     }
     if (!employeeData || !employeeData._id || !employeeData.name) {
       toast.error('Employee data not available. Cannot apply.');
+      setShowConfirmModal(false);
       return;
     }
+
+    setApplyingJobId(job._id);
+    setShowConfirmModal(false);
+
     try {
       const applicationData = { jobId: job._id, jobTitle: job.title, companyName: job.companyName };
       const response = await fetch('/api/applications', {
@@ -345,16 +513,34 @@ function ViewJobs() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(applicationData),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
-      const result = await response.json();
+
+      await response.json();
       toast.success(`Successfully applied for "${job.title}" at "${job.companyName}"!`, { position: "top-center" });
-      console.log('Application successful:', result);
+
+      // 1) Add job id to applied list (state + localStorage)
+      setAppliedJobIds(prev => {
+        const next = Array.from(new Set([...(prev || []), job._id]));
+        persistAppliedIds(next);
+        return next;
+      });
+
+      // 2) Remove the job from both jobs and filteredJobs so it disappears immediately from the UI
+      setJobs(prev => prev.filter(j => j._id !== job._id));
+      setFilteredJobs(prev => prev.filter(j => j._id !== job._id));
+
+      // 3) close preview if open and clear jobToApply
+      setShowPreview(false);
+      setJobToApply(null);
     } catch (err) {
       toast.error(`Failed to apply for job: ${err.message}`);
       console.error('Error applying for job:', err);
+    } finally {
+      setApplyingJobId(null);
     }
   };
 
@@ -409,14 +595,14 @@ function ViewJobs() {
     <div style={{ minHeight: '100vh', backgroundColor: '#f7fafc', padding: '1rem 2rem', fontFamily: 'Inter, sans-serif' }}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       <ToastContainer position="top-center" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
-      
+
       <div style={styles.filterButtonContainer}>
         <button style={styles.openFilterButton} onClick={() => setFilterOpen(true)}>
           Filter ☰
         </button>
       </div>
 
-      <FilterComponent 
+      <FilterComponent
         isOpen={isFilterOpen}
         onClose={() => setFilterOpen(false)}
         onFilterChange={handleFilterChange}
@@ -455,8 +641,25 @@ function ViewJobs() {
                 <button onClick={() => handleViewJob(job)} style={{ backgroundColor: '#2563eb', color: '#fff', fontWeight: '700', padding: '0.5rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', boxShadow: '0 3px 6px rgba(37, 99, 235, 0.4)', transition: 'background-color 250ms ease, box-shadow 250ms ease', userSelect: 'none' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#1d4ed8'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(29, 78, 216, 0.6)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#2563eb'; e.currentTarget.style.boxShadow = '0 3px 6px rgba(37, 99, 235, 0.4)'; }}>
                   View Details
                 </button>
-                <button onClick={() => handleApplyJobClick(job)} style={{ backgroundColor: '#059669', color: '#fff', fontWeight: '700', padding: '0.5rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', boxShadow: '0 3px 6px rgba(5, 150, 105, 0.4)', transition: 'background-color 250ms ease, box-shadow 250ms ease', userSelect: 'none' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#047857'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(4, 120, 87, 0.6)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#059669'; e.currentTarget.style.boxShadow = '0 3px 6px rgba(5, 150, 105, 0.4)'; }}>
-                  Apply Now
+                <button
+                  onClick={() => handleApplyJobClick(job)}
+                  disabled={applyingJobId === job._id}
+                  style={{
+                    backgroundColor: applyingJobId === job._id ? '#0b5133' : '#059669',
+                    color: '#fff',
+                    fontWeight: '700',
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    cursor: applyingJobId === job._id ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 3px 6px rgba(5, 150, 105, 0.4)',
+                    transition: 'background-color 250ms ease, box-shadow 250ms ease',
+                    userSelect: 'none'
+                  }}
+                  onMouseEnter={(e) => { if (applyingJobId !== job._id) { e.currentTarget.style.backgroundColor = '#047857'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(4, 120, 87, 0.6)'; } }}
+                  onMouseLeave={(e) => { if (applyingJobId !== job._id) { e.currentTarget.style.backgroundColor = '#059669'; e.currentTarget.style.boxShadow = '0 3px 6px rgba(5, 150, 105, 0.4)'; } }}
+                >
+                  {applyingJobId === job._id ? 'Applying...' : 'Apply Now'}
                 </button>
                 <button onClick={() => handleReportJobClick(job)} style={{ backgroundColor: '#f59e42', color: '#fff', fontWeight: '700', padding: '0.5rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', boxShadow: '0 3px 6px rgba(245, 158, 66, 0.4)', transition: 'background-color 250ms ease, box-shadow 250ms ease', userSelect: 'none' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#d97706'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(217, 119, 6, 0.6)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f59e42'; e.currentTarget.style.boxShadow = '0 3px 6px rgba(245, 158, 66, 0.4)'; }}>
                   Report
@@ -506,7 +709,12 @@ function ViewJobs() {
               </div>
             )}
             <div style={{ textAlign: 'right', marginTop: '1.5rem' }}>
-              <button onClick={() => handleApplyJobClick(selectedJob)} style={{ backgroundColor: '#059669', color: '#ffffff', fontWeight: '700', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', transition: 'background-color 200ms ease-in-out, box-shadow 200ms ease-in-out', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', border: 'none', cursor: 'pointer', userSelect: 'none' }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#047857'; e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#059669'; e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'; }}>
+              <button
+                onClick={() => handleApplyJobClick(selectedJob)}
+                style={{ backgroundColor: '#059669', color: '#ffffff', fontWeight: '700', padding: '0.75rem 1.5rem', borderRadius: '0.5rem', transition: 'background-color 200ms ease-in-out, box-shadow 200ms ease-in-out', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', border: 'none', cursor: 'pointer', userSelect: 'none' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#047857'; e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#059669'; e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'; }}
+              >
                 Apply for this Job
               </button>
             </div>
@@ -514,7 +722,13 @@ function ViewJobs() {
         </div>
       )}
       {showConfirmModal && jobToApply && (
-        <ConfirmationModal isOpen={showConfirmModal} onConfirm={handleConfirmApply} onCancel={() => setShowConfirmModal(false)} job={jobToApply} />
+        <ConfirmationModal
+          isOpen={showConfirmModal}
+          onConfirm={handleConfirmApply}
+          onCancel={() => setShowConfirmModal(false)}
+          job={jobToApply}
+          applyingJobId={applyingJobId}
+        />
       )}
       {showReportModal && jobToReport && (
         <div style={{ position: 'fixed', inset: '0', backgroundColor: 'rgba(26, 32, 44, 0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: '100' }}>
