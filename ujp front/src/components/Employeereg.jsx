@@ -46,6 +46,8 @@ export default function JobSeekerReg() {
     setCv(e.target.files[0]);
   };
 
+  
+
   const handleCertificateTitleChange = (id, e) => {
     const newTitle = e.target.value;
     setCertificates(prev =>
@@ -137,6 +139,29 @@ export default function JobSeekerReg() {
     paddingBottom: '5px', color: '#333', fontFamily: 'monospace',
   };
 
+  const sendotp = async (email) => {
+  try {
+    const response = await fetch('/api/users/send-otp', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email }),
+});
+
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to send OTP');
+    }
+
+    alert('OTP sent to your email!');
+  } catch (error) {
+    console.error('Send OTP Error:', error.message);
+    alert(error.message);
+  }
+};
+
+
   return (
     <div className="register-container">
       {showBuffering && <BufferingLoader onFinish={() => setShowBuffering(false)} />}
@@ -146,14 +171,37 @@ export default function JobSeekerReg() {
 
       <form onSubmit={handleSubmit} className="register-form" encType="multipart/form-data">
         <h3 style={sectionHeaderStyle}>Account Credentials</h3>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+  <input
+    type="email"
+    name="email"
+    placeholder="Email"
+    value={formData.email}
+    onChange={handleChange}
+    required
+    style={{ padding: '8px', borderRadius: '7px', border: '1px solid #ccc', height: '45px' }}
+  />
+  <button
+  type="button"
+  onClick={() => sendotp(formData.email)}
+  style={{
+    backgroundColor: '#e0e0e0ff',
+    color: '#09cf3aff',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    padding: '8px 16px',
+    cursor: 'pointer',
+    minHeight: '45px',
+    width: '180px',
+  }}
+>
+  Send OTP
+</button>
+</div>
+
+        
+        <input type="text" placeholder="Enter OTP" value={formData.otp} onChange={handleChange} required></input>
         <input
           type="password"
           name="password"
@@ -162,6 +210,7 @@ export default function JobSeekerReg() {
           onChange={handleChange}
           required
         />
+        
         <input
           type="password"
           name="confirmPassword"
