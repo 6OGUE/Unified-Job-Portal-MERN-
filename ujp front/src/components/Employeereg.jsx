@@ -21,7 +21,7 @@ async function registerUser(formData) {
 
 export default function JobSeekerReg() {
   const [formData, setFormData] = useState({
-    name: "", dob: "", gender: "", about: "", email: "", password: "", confirmPassword: ""
+    name: "", dob: "", gender: "", about: "", email: "", password: "", confirmPassword: "", otp: ""
   });
 
   const [dobInputType, setDobInputType] = useState('text');
@@ -95,6 +95,14 @@ export default function JobSeekerReg() {
       return;
     }
 
+    // OTP verification step
+    const otpOk = await verifyOtp();
+    if (!otpOk) {
+      setLoading(false);
+      setShowBuffering(false);
+      return;
+    }
+
     setTimeout(async () => {
       setShowBuffering(false);
 
@@ -162,6 +170,28 @@ export default function JobSeekerReg() {
 };
 
 
+const verifyOtp = async () => {
+  try {
+    const response = await fetch('http://localhost:5000/api/users/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: formData.email, code: formData.otp }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setMessage("Error: " + (data.message || "OTP verification failed"));
+      setShowModal(true);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    setMessage("Error: " + error.message);
+    setShowModal(true);
+    return false;
+  }
+};
+
+
   return (
     <div className="register-container">
       {showBuffering && <BufferingLoader onFinish={() => setShowBuffering(false)} />}
@@ -201,7 +231,14 @@ export default function JobSeekerReg() {
 </div>
 
         
-        <input type="text" placeholder="Enter OTP" value={formData.otp} onChange={handleChange} required></input>
+        <input
+          type="text"
+          name="otp"
+          placeholder="Enter OTP"
+          value={formData.otp}
+          onChange={handleChange}
+          required
+        />
         <input
           type="password"
           name="password"

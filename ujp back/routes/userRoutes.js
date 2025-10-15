@@ -1,8 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import upload from '../middleware/upload.js';
-import User from '../models/User.js'; 
-import { sendotp } from '../controllers/userController.js';
+import User from '../models/User.js';   
 import {
     registerUser,
     loginUser,
@@ -13,6 +12,8 @@ import {
     addCertificates,
     deleteCV,
     deleteCertificate,
+    sendotp,
+    verifyotp,
 } from '../controllers/userController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -88,8 +89,9 @@ router.delete('/profile/cv', protect, deleteCV);
 
 
 router.delete('/profile/certificates/:id', protect, deleteCertificate);
-
+router.post('/verify-otp', verifyotp);
 router.post('/send-otp', sendotp);
+
 
 
 router.get('/:id', protect, async (req, res) => {
