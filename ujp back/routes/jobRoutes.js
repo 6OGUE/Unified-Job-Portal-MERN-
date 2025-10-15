@@ -1,4 +1,5 @@
 import express from 'express';
+import Job from '../models/Job.js';
 import { protect } from '../middleware/authMiddleware.js';
 import Report from '../models/report.js'; // <-- Correct import for ES module
 import { 
@@ -14,6 +15,7 @@ const router = express.Router();
 // POST /api/jobs - Create a new job (protected route for employers)
 router.post('/', protect, postJob);
 
+
 // GET /api/jobs - Get filtered jobs for employees based on their education level
 // or get all jobs for employers/admins
 router.get('/', protect, (req, res) => {
@@ -26,6 +28,17 @@ router.get('/', protect, (req, res) => {
 
 // GET /api/jobs/my-jobs - Get all jobs posted by the logged-in employer
 router.get('/my-jobs', protect, getEmployerJobs);
+
+
+router.get('/count', async (req, res) => {
+  try {
+    const count = await Job.countDocuments(); // count all jobs
+    res.json({ count });
+  } catch (error) {
+    console.error('Error fetching job count:', error);
+    res.status(500).json({ message: 'Server error fetching job count' });
+  }
+});
 
 // DELETE /api/jobs/:id - Delete a job by ID
 router.delete('/:id', protect, deleteJob);

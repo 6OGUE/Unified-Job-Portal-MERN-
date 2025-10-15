@@ -589,3 +589,13 @@ export const deleteCertificate = async (req, res) => {
         res.status(500).json({ message: 'Error deleting certificate.' });
     }
 };
+// Get total number of users (Employees)
+export const getUsersCount = async (req, res) => {
+  try {
+    const count = await User.countDocuments(); // counts all users
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching users count' });
+  }
+};

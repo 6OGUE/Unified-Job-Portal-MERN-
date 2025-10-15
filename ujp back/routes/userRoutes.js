@@ -108,9 +108,39 @@ router.delete('/profile/cv', protect, deleteCV);
 // @access  Private
 router.delete('/profile/certificates/:id', protect, deleteCertificate);
 
+
+
+// @desc    Get total number of employees (job seekers)
+// @route   GET /api/users/count/employees
+// @access  Private
+router.get('/count/employees', async (req, res) => {
+  try {
+    const count = await User.countDocuments({ role: 'employee' });
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error while counting employees.' });
+  }
+});
+
+// @desc    Get total number of employers
+// @route   GET /api/users/count/employers
+// @access  Private
+router.get('/count/employers', async (req, res) => {
+  try {
+    const count = await User.countDocuments({ role: 'employer' });
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error while counting employers.' });
+  }
+});
+
+
 // @desc    Get user profile by ID
 // @route   GET /api/users/:id
 // @access  Private
+
 router.get('/:id', protect, async (req, res) => {
     try {
         const userId = req.params.id;
