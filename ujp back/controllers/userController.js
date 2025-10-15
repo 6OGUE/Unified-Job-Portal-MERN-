@@ -6,6 +6,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pdfParse from 'pdf-parse';
+import Otp from '../models/otp.js';
+import nodemailer from 'nodemailer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -113,7 +115,7 @@ async function registerEmployer(req, res) {
     try {
         const fileBuffer = fs.readFileSync(filePathOnDisk);
 
-        // For employer certificate, only check name (nameOnly mode)
+        
         const { nameFound } = await performSmartVerification(fileBuffer, companyName, 'nameOnly');
         const pdfData = await pdfParse(fileBuffer);
         const extractedText = pdfData.text;
@@ -246,8 +248,19 @@ async function registerJobSeeker(req, res) {
             cleanupFiles();
             return res.status(400).json({ message: 'User with this email already exists.' });
         }
+        const lowercasedEmail = email.toLowerCase();
+        const emailVerificationRecord = await Otp.findOne({ email: lowercasedEmail });
 
-        // Validate all certificates: name must be found in each
+        if (!emailVerificationRecord || !emailVerificationRecord.verified) {
+        cleanupFiles();
+        return res.status(400).json({
+        message: 'Please verify your email address before registering.',
+        });
+        }
+
+
+
+
         const certificateFiles = allUploadedFiles.filter((f) => f.fieldname.startsWith('certificates['));
         const certificateRecords = [];
         for (const certFile of certificateFiles) {
@@ -290,6 +303,9 @@ async function registerJobSeeker(req, res) {
         });
 
         await user.save();
+        // Clean up the OTP record after successful registration
+        await Otp.deleteOne({ email });
+
         res.status(201).json({ message: 'Employee registered successfully.' });
     } catch (error) {
         console.error('Employee Registration Error:', error);
@@ -560,7 +576,6 @@ export const deleteCertificate = async (req, res) => {
 
     try {
         if (!req.user?.id) return res.status(401).json({ message: 'Unauthorized.' });
-
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'User not found.' });
 
@@ -588,6 +603,7 @@ export const deleteCertificate = async (req, res) => {
         console.error('Error deleting certificate:', err);
         res.status(500).json({ message: 'Error deleting certificate.' });
     }
+
 };
 // Get total number of users (Employees)
 export const getUsersCount = async (req, res) => {
@@ -599,3 +615,86 @@ export const getUsersCount = async (req, res) => {
     res.status(500).json({ message: 'Error fetching users count' });
   }
 };
+
+
+
+////////////////////////////////OTP////////////////////////////////////////
+
+export const verifyotp = async (req, res) => {
+  const { email, code } = req.body;
+
+  if (!email || !code)
+    return res.status(400).json({ message: 'Email and OTP are required' });
+
+  try {
+    const otpRecord = await Otp.findOne({ email });
+
+    if (!otpRecord)
+      return res.status(400).json({ message: 'No OTP found for this email' });
+
+    if (otpRecord.expiresAt < new Date())
+      return res.status(400).json({ message: 'OTP has expired' });
+
+    if (otpRecord.code !== code)
+      return res.status(400).json({ message: 'Invalid OTP' });
+
+    // ✅ Mark as verified
+    otpRecord.verified = true;
+    await otpRecord.save();
+
+    res.status(200).json({ message: 'OTP verified successfully' });
+  } catch (err) {
+    console.error('Error verifying OTP:', err);
+    res.status(500).json({ message: 'Server error while verifying OTP' });
+  }
+};
+
+
+
+export const sendotp = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) return res.status(400).json({ message: 'Email is required' });
+
+  try {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
+    await Otp.findOneAndUpdate(
+      { email },
+      { code, expiresAt, verified: false },
+      { upsert: true, new: true }
+    );
+
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail', 
+      auth: {
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS, 
+      },
+    });
+
+    // 📧 Email content
+    const mailOptions = {
+      from: `"Your App" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Your OTP Code',
+      html: `
+        <p>Greetings from Unified Job Portal,</p>
+        <p>Your One-Time Password (OTP) is:</p>
+        <h2>${code}</h2>
+        <p>This OTP is valid for 10 minutes.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `,
+    };
+
+    // 📤 Send the email
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ message: 'OTP sent successfully' });
+  } catch (err) {
+    console.error('Error sending OTP:', err);
+    res.status(500).json({ message: 'Server error while sending OTP' });
+  }
+};
+
+

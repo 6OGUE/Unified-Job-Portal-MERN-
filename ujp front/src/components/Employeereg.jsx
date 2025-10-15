@@ -21,7 +21,7 @@ async function registerUser(formData) {
 
 export default function JobSeekerReg() {
   const [formData, setFormData] = useState({
-    name: "", dob: "", gender: "", about: "", email: "", password: "", confirmPassword: ""
+    name: "", dob: "", gender: "", about: "", email: "", password: "", confirmPassword: "", otp: ""
   });
 
   const [dobInputType, setDobInputType] = useState('text');
@@ -45,6 +45,8 @@ export default function JobSeekerReg() {
   const handleCvChange = (e) => {
     setCv(e.target.files[0]);
   };
+
+  
 
   const handleCertificateTitleChange = (id, e) => {
     const newTitle = e.target.value;
@@ -93,6 +95,14 @@ export default function JobSeekerReg() {
       return;
     }
 
+    // OTP verification step
+    const otpOk = await verifyOtp();
+    if (!otpOk) {
+      setLoading(false);
+      setShowBuffering(false);
+      return;
+    }
+
     setTimeout(async () => {
       setShowBuffering(false);
 
@@ -137,6 +147,51 @@ export default function JobSeekerReg() {
     paddingBottom: '5px', color: '#333', fontFamily: 'monospace',
   };
 
+  const sendotp = async (email) => {
+  try {
+    const response = await fetch('/api/users/send-otp', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email }),
+});
+
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to send OTP');
+    }
+
+    alert('OTP sent to your email!');
+  } catch (error) {
+    console.error('Send OTP Error:', error.message);
+    alert(error.message);
+  }
+};
+
+
+const verifyOtp = async () => {
+  try {
+    const response = await fetch('http://localhost:5000/api/users/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: formData.email, code: formData.otp }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setMessage("Error: " + (data.message || "OTP verification failed"));
+      setShowModal(true);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    setMessage("Error: " + error.message);
+    setShowModal(true);
+    return false;
+  }
+};
+
+
   return (
     <div className="register-container">
       {showBuffering && <BufferingLoader onFinish={() => setShowBuffering(false)} />}
@@ -146,11 +201,41 @@ export default function JobSeekerReg() {
 
       <form onSubmit={handleSubmit} className="register-form" encType="multipart/form-data">
         <h3 style={sectionHeaderStyle}>Account Credentials</h3>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+  <input
+    type="email"
+    name="email"
+    placeholder="Email"
+    value={formData.email}
+    onChange={handleChange}
+    required
+    style={{ padding: '8px', borderRadius: '7px', border: '1px solid #ccc', height: '45px' }}
+  />
+  <button
+  type="button"
+  onClick={() => sendotp(formData.email)}
+  style={{
+    backgroundColor: '#e0e0e0ff',
+    color: '#09cf3aff',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    padding: '8px 16px',
+    cursor: 'pointer',
+    minHeight: '45px',
+    width: '180px',
+  }}
+>
+  Send OTP
+</button>
+</div>
+
+        
         <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
+          type="text"
+          name="otp"
+          placeholder="Enter OTP"
+          value={formData.otp}
           onChange={handleChange}
           required
         />
@@ -162,6 +247,7 @@ export default function JobSeekerReg() {
           onChange={handleChange}
           required
         />
+        
         <input
           type="password"
           name="confirmPassword"
