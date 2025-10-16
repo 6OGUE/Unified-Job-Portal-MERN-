@@ -21,7 +21,9 @@ import UserProfile from './components/employer/UserProfile.jsx';
 import { AuthProvider } from './context/AuthContext';
 import ApplicationHistory from './components/employee/history';
 import RoleBasedHome from './components/RoleBasedHome';
-import AdminReports from './components/admin/AdminReports'; // Add this import
+import AdminReports from './components/admin/AdminReports'; 
+import Requests from './components/admin/requests'; 
+
 
 function App() {
     return (
@@ -46,12 +48,12 @@ function App() {
                     <Route path="/employer/my-jobs" element={<MyJobs />} />
                     <Route path="/employer/all-applications" element={<AllApplicationsTable />} />
                     
-                    {/* --- THIS IS THE ONLY CORRECTED LINE --- */}
                     <Route path="/user/:id/:applicationId" element={<UserProfile />} />
 
                     <Route path="/employee/applications" element={<ApplicationHistory />} />
                     <Route path="/home" element={<RoleBasedHome />} />
-                    <Route path="/admin/reports" element={<AdminReports />} /> {/* Added reports route */}
+                    <Route path="/admin/reports" element={<AdminReports />} /> 
+                    <Route path="/admin/requests" element={<Requests />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

@@ -43,6 +43,7 @@ function Navbar() {
           <>
             <Link to="/admin/employers" style={navLinkStyle}>EMPLOYERS</Link>
             <Link to="/admin/employees" style={navLinkStyle}>SEEKERS</Link>
+            <Link to="/admin/requests" style={navLinkStyle}>REQUESTS</Link>
             <Link to="/admin/reports" style={navLinkStyle}>REPORTS</Link> {/* Added Reports tab */}
           </>
         )}

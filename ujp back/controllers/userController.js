@@ -8,6 +8,9 @@ import { fileURLToPath } from 'url';
 import pdfParse from 'pdf-parse';
 import Otp from '../models/otp.js';
 import nodemailer from 'nodemailer';
+import EmployerEmail from '../models/EmployerEmail.js';
+import TemporaryEmployer from '../models/Temporary.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -95,10 +98,13 @@ async function registerEmployer(req, res) {
         if (file?.filename && fs.existsSync(path.join(baseUploadPath, file.filename))) {
             try {
                 fs.unlinkSync(path.join(baseUploadPath, file.filename));
-            } catch (e) {}
+            } catch (e) {
+                console.error('File cleanup error:', e);
+            }
         }
     };
 
+    // Basic validations
     if (!password || password.trim() === '')
         return res.status(400).json({ message: 'Password is required and cannot be empty.' });
     if (!companyName || companyName.trim() === '')
@@ -113,19 +119,21 @@ async function registerEmployer(req, res) {
     const filePathOnDisk = path.join(baseUploadPath, certificateFile.filename);
 
     try {
+        
         const fileBuffer = fs.readFileSync(filePathOnDisk);
 
         
         const { nameFound } = await performSmartVerification(fileBuffer, companyName, 'nameOnly');
+
         const pdfData = await pdfParse(fileBuffer);
-        const extractedText = pdfData.text;
+        const extractedText = pdfData.text || "";
 
         if (!nameFound) {
             cleanupFile(certificateFile);
             return res.status(400).json({ message: 'Verification failed: Company name not found in the certificate.' });
         }
 
-        // Check word match count
+        
         const commonCertificateWords = [
             "certificate","of","incorporation","registration","this","is","to","certify","that","the",
             "company","has","been","registered","under","act","as","per","with","authority",
@@ -135,7 +143,7 @@ async function registerEmployer(req, res) {
             "hereby","incorporated","document","place","given","day","year"
         ];
 
-        const textLower = (extractedText || "").toLowerCase();
+        const textLower = extractedText.toLowerCase();
         let matchCount = 0;
         commonCertificateWords.forEach(word => {
             if (textLower.includes(word.toLowerCase())) {
@@ -145,21 +153,33 @@ async function registerEmployer(req, res) {
 
         if (matchCount < 25) {
             cleanupFile(certificateFile);
-            return res.status(400).json({
-                message: `Verification failed: Certificate does not appear valid.`
-            });
+            return res.status(400).json({ message: 'Verification failed: Certificate does not appear valid.' });
         }
 
+        
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             cleanupFile(certificateFile);
             return res.status(400).json({ message: 'User with this email already exists.' });
         }
 
+        
+        try {
+            const emailRecord = new EmployerEmail({ email });
+            await emailRecord.save();
+        } catch (emailSaveError) {
+            console.error('Error saving employer email:', emailSaveError);
+            
+        }
+
+        
         const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
+        
         const certificateFilePath = saveFileAndGetUrl(certificateFile, req);
 
-        const user = new User({
+        
+        const user = new TemporaryEmployer({
             name,
             email,
             password,
@@ -172,17 +192,15 @@ async function registerEmployer(req, res) {
         });
 
         await user.save();
-        res.status(201).json({ message: 'Employer registered successfully.' });
-}
- catch (error) {
+
+        res.status(201).json({ message: 'Registration Request has been sent. You will be able to log in once the request is accepted.' });
+
+    } catch (error) {
         console.error('Employer Registration Error:', error);
         cleanupFile(certificateFile);
-        res
-            .status(500)
-            .json({ message: error.message || 'Server error during employer registration.' });
+        res.status(500).json({ message: error.message || 'Server error during employer registration.' });
     }
 }
-
 // Job Seeker registration
 async function registerJobSeeker(req, res) {
     const {
@@ -330,14 +348,32 @@ export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
         const lowercasedEmail = email.toLowerCase();
+
         const user = await User.findOne({ email: lowercasedEmail });
-        if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+        if (!user) {
+            // Check if email exists in EmployerEmail collection (pending registration)
+            const pendingEmail = await EmployerEmail.findOne({ email: lowercasedEmail });
+            if (pendingEmail) {
+                return res.status(403).json({ message: 'Your registration request is still pending.' });
+            } else {
+                return res.status(400).json({ message: 'Invalid credentials' });
+            }
+        }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+        if (!isMatch) {
+            // If password doesn't match, also check EmployerEmail for pending request
+            const pendingEmail = await EmployerEmail.findOne({ email: lowercasedEmail });
+            if (pendingEmail) {
+                return res.status(403).json({ message: 'Your registration request is still pending.' });
+            } else {
+                return res.status(400).json({ message: 'Invalid credentials' });
+            }
+        }
 
-        if (!process.env.JWT_SECRET)
+        if (!process.env.JWT_SECRET) {
             return res.status(500).json({ message: 'Server configuration error.' });
+        }
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
             expiresIn: '1h',
