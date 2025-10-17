@@ -92,7 +92,7 @@ const EmployeeView = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ backgroundColor: '#2b2b2bff', color: '#fff', textAlign: 'left' }}>
-              <th style={{ padding: '12px' }}>Name / Company</th>
+              <th style={{ padding: '12px' }}>Name</th>
               <th style={{ padding: '12px' }}>Email</th>
               <th style={{ padding: '12px', textAlign: 'center' }}>Action</th>
             </tr>

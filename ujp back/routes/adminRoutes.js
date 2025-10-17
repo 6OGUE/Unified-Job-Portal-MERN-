@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Report from '../models/report.js';
 import TemporaryEmployer from '../models/Temporary.js'; // ✅ Add missing import
 import EmployerEmail from '../models/EmployerEmail.js';
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
@@ -119,6 +120,29 @@ router.post('/temporary-list/approve/:id', async (req, res) => {
 
     await newUser.save();
 
+    //  SEND APPROVAL EMAIL 
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail', 
+      auth: {
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS, 
+      },
+    });
+
+    const mailOptions = {
+      from: `"Unified Job Portal" <${process.env.EMAIL_USER}>`,
+      to: tempEmployer.email,
+      subject: 'Your Registration is Approved! - Unified Job Portal',
+      html: `
+        <h3>Congratulations, ${tempEmployer.name}!</h3>
+        <p>We are pleased to inform you that your registration for <strong>Unified Job Portal</strong> has been approved.</p>
+        <p>You can now log in to your account to post jobs and connect with talented candidates.</p>
+        <p>Thank you for joining our platform!</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
     // Delete the TemporaryEmployer after successful user creation
     await TemporaryEmployer.findByIdAndDelete(req.params.id);
 
@@ -136,7 +160,29 @@ router.post('/temporary-list/reject/:id', async (req, res) => {
       return res.status(404).json({ message: 'Employer not found' });
     }
 
-    
+    // SEND REJECTION EMAIL 
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail', 
+      auth: {
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS, 
+      },
+    });
+
+    const mailOptions = {
+      from: `"Unified Job Portal" <${process.env.EMAIL_USER}>`,
+      to: employer.email,
+      subject: 'Update on Your Registration - Unified Job Portal',
+      html: `
+        <h3>Hello ${employer.name},</h3>
+        <p>Thank you for your interest in <strong>Unified Job Portal</strong>.</p>
+        <p>After reviewing your application, we regret to inform you that we are unable to approve your registration at this time.</p>
+        <p>If you believe this was a mistake or have further questions, please feel free to contact our support team.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
     if (employer.email) {
       await EmployerEmail.deleteOne({ email: employer.email });
     }
