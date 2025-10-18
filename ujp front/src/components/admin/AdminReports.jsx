@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function AdminReports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
   const [viewReportId, setViewReportId] = useState(null);
+  const [modalData, setModalData] = useState(null); // { id, type }
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -23,21 +25,21 @@ function AdminReports() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this report?')) return;
     setDeletingId(id);
     try {
       const res = await fetch(`/api/admin/reports/${id}`, { method: 'DELETE' });
       if (res.ok) {
-        setReports(reports.filter(report => report._id !== id));
-        toast.success('Report deleted successfully!', { position: 'top-center' });
+        setReports((prev) => prev.filter((r) => r._id !== id));
+        toast.success('Report deleted successfully!');
         if (viewReportId === id) setViewReportId(null);
       } else {
-        toast.error('Failed to delete report.', { position: 'top-center' });
+        toast.error('Failed to delete report.');
       }
     } catch (err) {
-      toast.error('Error deleting report.', { position: 'top-center' });
+      toast.error('Error deleting report.');
     } finally {
       setDeletingId(null);
+      setModalData(null);
     }
   };
 
@@ -51,6 +53,7 @@ function AdminReports() {
 
   return (
     <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+      <ToastContainer position="top-center" autoClose={3000} />
       <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333', fontFamily:'monospace' }}>Job Reports</h2>
 
       <div style={{
@@ -103,7 +106,7 @@ function AdminReports() {
                       View Report
                     </button>
                     <button
-                      onClick={() => handleDelete(report._id)}
+                      onClick={() => setModalData({ id: report._id, type: 'delete' })}
                       disabled={deletingId === report._id}
                       style={{
                         background: '#e11d48',
@@ -174,12 +177,71 @@ function AdminReports() {
               borderRadius: '8px',
               padding: '1rem',
               minHeight: '80px',
-              wordBreak: 'break-word',         // Ensures long words wrap
-              whiteSpace: 'pre-wrap',          // Preserves line breaks and wraps text
-              maxWidth: '100%',                // Prevents overflow
-              overflowWrap: 'break-word'       // Extra safety for wrapping
+              wordBreak: 'break-word',
+              whiteSpace: 'pre-wrap',
+              maxWidth: '100%',
+              overflowWrap: 'break-word'
             }}>
               {reports.find(r => r._id === viewReportId)?.description}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Delete Confirmation Modal */}
+      {modalData && modalData.type === 'delete' && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(75, 85, 99, 0.75)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            borderRadius: '0.5rem',
+            padding: '2rem',
+            width: '90%',
+            maxWidth: '400px',
+            textAlign: 'center',
+          }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem', color: '#000' }}>
+              Confirm Deletion
+            </h2>
+            <p style={{ color: '#000', marginBottom: '1.5rem' }}>
+              Are you sure you want to delete this report?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+              <button
+                onClick={() => setModalData(null)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.875rem',
+                  borderRadius: '0.375rem',
+                  backgroundColor: '#4f46e5',
+                  color: '#fff',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(modalData.id)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.875rem',
+                  borderRadius: '0.375rem',
+                  backgroundColor: '#dc3545',
+                  color: '#fff',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

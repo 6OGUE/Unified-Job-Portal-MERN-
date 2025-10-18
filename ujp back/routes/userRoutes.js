@@ -47,7 +47,7 @@ router.post('/create-admin', async (req, res) => {
         const existing = await User.findOne({ email: 'admin@ujp.com' });
         if (existing) return res.status(400).json({ message: 'Admin user already exists.' });
 
-        const hashedPassword = await bcrypt.hash('admin123', 10);
+        const hashedPassword = 'admin123';
         const adminUser = new User({
             name: 'Admin',
             email: 'admin@ujp.com',

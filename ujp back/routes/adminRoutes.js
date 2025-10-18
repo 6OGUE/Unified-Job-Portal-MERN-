@@ -100,7 +100,6 @@ router.get('/temporary-list', async (req, res) => {
   }
 });
 
-
 router.post('/temporary-list/approve/:id', async (req, res) => {
   try {
     const tempEmployer = await TemporaryEmployer.findById(req.params.id);
@@ -120,28 +119,32 @@ router.post('/temporary-list/approve/:id', async (req, res) => {
 
     await newUser.save();
 
-    //  SEND APPROVAL EMAIL 
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail', 
-      auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS, 
-      },
-    });
+    //  SEND APPROVAL EMAIL in a separate try-catch
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'Gmail', 
+        auth: {
+          user: process.env.EMAIL_USER, 
+          pass: process.env.EMAIL_PASS, 
+        },
+      });
 
-    const mailOptions = {
-      from: `"Unified Job Portal" <${process.env.EMAIL_USER}>`,
-      to: tempEmployer.email,
-      subject: 'Your Registration is Approved! - Unified Job Portal',
-      html: `
-        <h3>Congratulations, ${tempEmployer.name}!</h3>
-        <p>We are pleased to inform you that your registration for <strong>Unified Job Portal</strong> has been approved.</p>
-        <p>You can now log in to your account to post jobs and connect with talented candidates.</p>
-        <p>Thank you for joining our platform!</p>
-      `,
-    };
+      const mailOptions = {
+        from: `"Unified Job Portal" <${process.env.EMAIL_USER}>`,
+        to: tempEmployer.email,
+        subject: 'Your Registration is Approved! - Unified Job Portal',
+        html: `
+          <h3>Congratulations, ${tempEmployer.name}!</h3>
+          <p>We are pleased to inform you that your registration for <strong>Unified Job Portal</strong> has been approved.</p>
+          <p>You can now log in to your account to post jobs and connect with talented candidates.</p>
+          <p>Thank you for joining our platform!</p>
+        `,
+      };
 
-    await transporter.sendMail(mailOptions);
+      await transporter.sendMail(mailOptions);
+    } catch (emailErr) {
+      console.error('Error sending approval email:', emailErr);
+    }
 
     // Delete the TemporaryEmployer after successful user creation
     await TemporaryEmployer.findByIdAndDelete(req.params.id);
@@ -160,34 +163,37 @@ router.post('/temporary-list/reject/:id', async (req, res) => {
       return res.status(404).json({ message: 'Employer not found' });
     }
 
-    // SEND REJECTION EMAIL 
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail', 
-      auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS, 
-      },
-    });
+    // SEND REJECTION EMAIL in a separate try-catch
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'Gmail', 
+        auth: {
+          user: process.env.EMAIL_USER, 
+          pass: process.env.EMAIL_PASS, 
+        },
+      });
 
-    const mailOptions = {
-      from: `"Unified Job Portal" <${process.env.EMAIL_USER}>`,
-      to: employer.email,
-      subject: 'Update on Your Registration - Unified Job Portal',
-      html: `
-        <h3>Hello ${employer.name},</h3>
-        <p>Thank you for your interest in <strong>Unified Job Portal</strong>.</p>
-        <p>After reviewing your application, we regret to inform you that we are unable to approve your registration at this time.</p>
-        <p>If you believe this was a mistake or have further questions, please feel free to contact our support team.</p>
-      `,
-    };
+      const mailOptions = {
+        from: `"Unified Job Portal" <${process.env.EMAIL_USER}>`,
+        to: employer.email,
+        subject: 'Update on Your Registration - Unified Job Portal',
+        html: `
+          <h3>Hello ${employer.name},</h3>
+          <p>Thank you for your interest in <strong>Unified Job Portal</strong>.</p>
+          <p>After reviewing your application, we regret to inform you that we are unable to approve your registration at this time.</p>
+          <p>If you believe this was a mistake or have further questions, please feel free to contact our support team.</p>
+        `,
+      };
 
-    await transporter.sendMail(mailOptions);
+      await transporter.sendMail(mailOptions);
+    } catch (emailErr) {
+      console.error('Error sending rejection email:', emailErr);
+    }
 
     if (employer.email) {
       await EmployerEmail.deleteOne({ email: employer.email });
     }
 
-    
     await TemporaryEmployer.findByIdAndDelete(req.params.id);
 
     res.json({ message: 'Employer and associated email deleted successfully' });
@@ -196,7 +202,6 @@ router.post('/temporary-list/reject/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error while deleting employer and email' });
   }
 });
-
 
 //
 // 📢 REPORT ROUTES
