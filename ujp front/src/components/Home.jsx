@@ -76,7 +76,7 @@ function Home() {
       <style>{`
         body {
           margin: 0;
-          background: linear-gradient(135deg, #000003 0%, #0a0a0f 100%);
+          background: linear-gradient(135deg, #f3f3f8ff 0%, #ffffffff 100%);
           color: #fff;
           font-family: 'Rockwell', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           overflow-x: hidden;

@@ -3,7 +3,6 @@ body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: #f7f9fc;
   color: #333;
-  min-height: 150vh;
 }
 
 .register-container {
@@ -268,10 +267,3 @@ button[type="button"] {
 .otp-button.pressed {
   transform: scale(0.95);
 }
-
-
-<<<<<<< HEAD
-
-
-=======
->>>>>>> dfbc2db2c0786397cbb3893aba8870429323dcec

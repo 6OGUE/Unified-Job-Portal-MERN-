@@ -54,15 +54,16 @@ function Login() {
         justifyContent: 'center',
         alignItems: 'center',
         height: '90vh',
-        backgroundColor: '#f0f4f8',
+        backgroundColor: '#000000ff',
         fontFamily: 'Arial, sans-serif',
+        color:"white",
       }}
     >
       <form
         onSubmit={handleSubmit}
         style={{ width: '320px', position: 'relative' }}
       >
-        <h2 style={{ marginBottom: '10px', color: '#333', textAlign: 'center' }}>
+        <h2 style={{ marginBottom: '10px', color: '#ffffffff', textAlign: 'center' }}>
           Log-in
         </h2>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>

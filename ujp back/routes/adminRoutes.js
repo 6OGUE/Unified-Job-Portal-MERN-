@@ -163,7 +163,7 @@ router.post('/temporary-list/reject/:id', async (req, res) => {
       return res.status(404).json({ message: 'Employer not found' });
     }
 
-    // SEND REJECTION EMAIL in a separate try-catch
+    
     try {
       const transporter = nodemailer.createTransport({
         service: 'Gmail', 

@@ -3,13 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext.jsx';
 
 const navLinkStyle = {
-    textDecoration: 'none',
-    margin: '0 10px',
-    padding: '10px 25px',
-    borderRadius: '50px',
-    fontWeight: 'bold',
-    transition: '0.3s',
-    color: 'white',
+  textDecoration: 'none',
+  margin: '0 10px',
+  padding: '10px 25px',
+  borderRadius: '50px',
+  fontWeight: 'bold',
+  transition: '0.3s',
+  color: 'white',
+  backgroundColor:"rgba(55, 56, 57, 0)",
 };
 
 function EmployerNavbar() {

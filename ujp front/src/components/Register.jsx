@@ -25,20 +25,22 @@ function Register() {
     fontWeight: '600',
     fontSize: '28px',
     color: '#333',
+    color:"white",
     textAlign: 'center'
   };
 
   return (
     <div
       style={{
-        minHeight: '88vh',
+        minHeight: '90vh',
         margin: 0,
         padding: 0,
         display: 'flex',
+        color:"white",
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
-        backgroundColor: '#f7f9fb',
+        backgroundColor: '#000000ff',
         fontFamily: 'Arial, sans-serif'
       }}
     >
@@ -47,7 +49,8 @@ function Register() {
         style={{
           marginBottom: '50px',
           fontFamily: 'monospace',
-          fontSize: '30px'
+          fontSize: '30px',
+          color:"white",
         }}
       >
         Select Type

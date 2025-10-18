@@ -12,8 +12,8 @@ const navLinkStyle = {
   fontWeight: 'bold',
   transition: '0.3s',
   color: 'white',
+  backgroundColor:"rgba(55, 56, 57, 0)",
 };
-
 function Navbar() {
   const { role, logout } = useContext(AuthContext);
   const navigate = useNavigate();

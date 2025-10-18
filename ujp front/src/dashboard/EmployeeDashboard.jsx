@@ -33,22 +33,22 @@ function EmployeeDashboard() {
       title: "Smart Job Suggestions",
       shortHint: "See jobs just for you",
       longHint: "Our system analyzes your qualifications to recommend jobs tailored specifically for you.",
-      icon: <FaBriefcase size={40} color="#1E90FF" />,
-      gradient: "linear-gradient(135deg, #e0f7fa, #b2ebf2)",
+      icon: <FaBriefcase size={40} color="#4f46e5" />,
+      gradient: "linear-gradient(135deg, #ffffff, #e0e7ff)",
     },
     {
       title: "Profile Insights",
       shortHint: "Improve your visibility",
       longHint: "Add skills, certifications, and experience. A complete profile increases your chances of being noticed by top employers.",
-      icon: <FaUserEdit size={40} color="#FF6F61" />,
-      gradient: "linear-gradient(135deg, #fff3e0, #ffe0b2)",
+      icon: <FaUserEdit size={40} color="#d97706" />,
+      gradient: "linear-gradient(135deg, #ffffff, #fef3c7)",
     },
     {
       title: "Application Tracking",
       shortHint: "Know your status",
       longHint: "Track all your applications in one place. See which jobs you applied to and their current status.",
-      icon: <FaHistory size={40} color="#32CD32" />,
-      gradient: "linear-gradient(135deg, #e8f5e9, #c8e6c9)",
+      icon: <FaHistory size={40} color="#15803d" />,
+      gradient: "linear-gradient(135deg, #ffffff, #dcfce7)",
     },
   ];
 
@@ -81,11 +81,11 @@ function EmployeeDashboard() {
         minHeight: "200vh",
         padding: "40px 20px",
         fontFamily: "'Poppins', sans-serif",
-        background: "#f5f7fa",
+        background: "#ffffffff",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        color: "#333",
+        color: "#000000ff",
       }}
     >
       {/* Header Section */}
@@ -93,7 +93,7 @@ function EmployeeDashboard() {
         <h1
           style={{
             fontSize: "2.5rem",
-            color: "#1E90FF",
+            color: "#100ceaff",
             marginBottom: "10px",
             opacity: animate ? 1 : 0,
             transform: animate ? "translateY(0)" : "translateY(-20px)",
@@ -109,8 +109,8 @@ function EmployeeDashboard() {
         </h1>
         <p
           style={{
-            fontSize: "1.1rem",
-            color: "#555",
+            fontSize: "1.3rem",
+            color: "#ffffffff",
             opacity: animate ? 1 : 0,
             transform: animate ? "translateY(0)" : "translateY(-10px)",
             transition: "all 0.8s ease 0.2s",
@@ -148,7 +148,7 @@ function EmployeeDashboard() {
         <h2
           style={{
             fontSize: "2rem",
-            color: "#1E90FF",
+            color: "#ffffffff",
             marginBottom: "30px",
             fontFamily: "monospace",
           }}
@@ -194,7 +194,7 @@ function EmployeeDashboard() {
           .card-container {
             display: flex;
             justify-content: center;
-            gap: 32px;
+            gap: 30px;
             flex-wrap: wrap;
             align-items: flex-start;
             width: 100%;
@@ -202,54 +202,48 @@ function EmployeeDashboard() {
           }
           .card {
             flex: 1 1 260px;
-            max-width: 320px;
-            min-height: 230px;
+            max-width: 300px;
+            min-height: 220px;
             position: relative;
-            border-radius: 18px;
-            padding: 32px 28px;
+            border-radius: 25px;
+            padding: 30px 25px;
             cursor: pointer;
             overflow: hidden;
-            box-shadow: 0 6px 18px rgba(30,144,255,0.10);
-            border: 1px solid #e3e8ee;
-            background: #f9fafb;
-            transition: transform 0.4s cubic-bezier(.4,0,.2,1), box-shadow 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.5s ease, box-shadow 0.3s ease;
           }
           .card h2 {
-            font-size: 1.35rem;
-            font-weight: 700;
+            font-size: 1.3rem;
+            font-weight: 600;
             margin-bottom: 12px;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'monospace';
             text-align: center;
-            color: #1e293b;
           }
           .card p {
-            font-size: 1rem;
-            line-height: 1.6;
+            font-size: 0.9rem;
+            line-height: 1.4rem;
             margin: 0;
             text-align: center;
-            color: #334155;
           }
           .extra-text {
             max-height: 0;
             overflow: hidden;
             opacity: 0;
             margin-top: 0;
-            transition: all 0.4s;
+            transition: all 0.4s ease;
           }
           .card:hover .extra-text {
             max-height: 200px;
             opacity: 1;
-            margin-top: 12px;
+            margin-top: 10px;
           }
           .card:hover {
-            transform: translateY(-8px) scale(1.04);
-            box-shadow: 0 12px 32px rgba(30,144,255,0.13);
-            border-color: #b6e0fe;
-            background: #f0f6ff;
+            transform: translateY(-6px) scale(1.03);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.07);
           }
           .feature-icon {
-            margin-bottom: 18px;
-            margin-left: 44%;
+            margin-bottom: 15px;
+            margin-left: 43%;
             animation: float 4s ease-in-out infinite;
           }
           @keyframes float {
@@ -259,45 +253,38 @@ function EmployeeDashboard() {
           }
           
           .faq-container {
-            
-            border-radius: 16px;
-            background: #f9fafb;
-            padding: 32px 0;
+            /* Removed extra padding and background to blend with the page */
           }
           .faq-item {
             background: #ffffff;
             border-radius: 12px;
-            margin-bottom: 18px;
+            margin-bottom: 15px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(30,144,255,0.05);
-            border: 1px solid #e3e8ee;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
           }
           .faq-question {
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 28px;
-            background-color: #f4f7fb;
-            color: #1e293b;
-            font-size: 1.13rem;
-            font-weight: 600;
+            padding: 18px 25px;
+            background-color: #f9fafb;
+            color: "#1e293b";
+            font-size: 1.1rem;
+            font-weight: 500;
             cursor: pointer;
             border: none;
             outline: none;
-            transition: background-color 0.2s, color 0.2s;
-            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.2s ease, color 0.2s ease;
           }
           .faq-question:hover {
-            background-color: #e3e8ee;
-            color: #2563eb;
+            background-color: #f3f4f6;
           }
           .faq-answer {
-            background-color: #f9fafb;
-            color: #334155;
+            background-color: #ffffff;
+            color: "#475569";
             font-size: 1rem;
-            line-height: 1.7;
-            font-family: 'Roboto Mono', monospace;
+            line-height: 1.6;
           }
 
           @media (max-width: 900px) {
