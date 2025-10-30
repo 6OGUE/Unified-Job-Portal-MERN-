@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function Login() {
@@ -56,7 +56,7 @@ function Login() {
         height: '90vh',
         backgroundColor: '#000000ff',
         fontFamily: 'Arial, sans-serif',
-        color:"white",
+        color: 'white',
       }}
     >
       <form
@@ -124,6 +124,28 @@ function Login() {
         >
           Login
         </button>
+
+        {/* 🔽 Register link added here */}
+        <p
+          style={{
+            marginTop: '15px',
+            textAlign: 'center',
+            color: '#ffffff',
+            fontSize: '15px',
+          }}
+        >
+          Don’t have an account?{' '}
+          <Link
+            to="/register"
+            style={{
+              color: '#007bff',
+              textDecoration: 'none',
+              fontWeight: '600',
+            }}
+          >
+            Register here
+          </Link>
+        </p>
 
         {message && (
           <p

@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaXTwitter } from "react-icons/fa6";
 
 const socialLinkStyle = {
   margin: '5px',
@@ -17,7 +18,7 @@ function Footer() {
         
         <div style={{ flex: '1 1 300px', marginBottom: '20px' }}>
           <h3 style={{ color: 'white' }}>Contact Us</h3>
-          <p>Email: contact@example.com</p>
+          <p>Email: ujuproject@gmail.com</p>
           <p>Phone: +91 9876543210</p>
           <p>Address: 123, ABC Street, India</p>
         </div>
@@ -26,9 +27,8 @@ function Footer() {
           <h3 style={{ color: 'white' }}>Follow Us</h3>
           <div style={{ marginTop: '10px' }}>
             <a href="#" style={socialLinkStyle}><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook" style={iconStyle} /></a>
-            <a href="#" style={socialLinkStyle}><img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter" style={iconStyle} /></a>
+            <a href="https://x.com" style={socialLinkStyle}><FaXTwitter style={{ ...iconStyle, fontSize: '28px', color: 'white' }} /></a>
             <a href="#" style={socialLinkStyle}><img src="https://cdn-icons-png.flaticon.com/512/733/733558.png" alt="Instagram" style={iconStyle} /></a>
-            <a href="#" style={socialLinkStyle}><img src="https://cdn-icons-png.flaticon.com/512/733/733561.png" alt="LinkedIn" style={iconStyle} /></a>
           </div>
         </div>
       </div>

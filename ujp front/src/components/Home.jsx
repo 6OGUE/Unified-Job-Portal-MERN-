@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Footer from './Footer';
 import { motion } from 'framer-motion';
-import { FaUsers, FaRocket, FaBriefcase } from 'react-icons/fa';
+import { FaUserTie, FaBriefcase } from 'react-icons/fa';  
+import { MdBusiness } from "react-icons/md"; 
 import axios from 'axios';
 
 const messages = [
@@ -110,7 +111,7 @@ function Home() {
         }
 
         .section-spacer {
-          height: 100px;
+          height: 120px;
         }
 
         .stats-grid {
@@ -183,7 +184,7 @@ function Home() {
             </h1>
 
             {/* About Us */}
-            <div className="section about" style={{ color: '#00C9FF', textAlign: 'center', padding: 0, marginTop: '85px' }}>
+            <div className="section about" style={{ color: '#00C9FF', textAlign: 'center', padding: 0, marginTop: '140px' }}>
               <h1>About Us</h1>
               <p style={{ color: '#00C9FF', fontSize: '20px', lineHeight: '1.8', maxWidth: '950px', margin: '0 auto' }}>
                 Unified Job Portal makes the process of finding jobs and hiring talent much easier and more unified, helping users connect with opportunities without the usual hassle.
@@ -202,13 +203,13 @@ function Home() {
             </motion.div>
 
             <motion.div className="stat-card" whileHover={{ scale: 1.05 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <FaUsers className="stat-icon" style={{ color: '#92FE9D' }} />
+              <MdBusiness className="stat-icon" style={{ color: '#c084fc' }} />
               <div className="counter">{animatedEmployerCount}</div>
               <div>Employers Registered</div>
             </motion.div>
 
             <motion.div className="stat-card" whileHover={{ scale: 1.05 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-              <FaRocket className="stat-icon" style={{ color: '#c084fc' }} />
+              <FaUserTie className="stat-icon" style={{ color: '#92FE9D' }} />
               <div className="counter">{animatedEmployeeCount}</div>
               <div>Job Seekers Registered</div>
             </motion.div>

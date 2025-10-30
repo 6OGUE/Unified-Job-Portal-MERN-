@@ -267,3 +267,8 @@ button[type="button"] {
 .otp-button.pressed {
   transform: scale(0.95);
 }
+
+/* move hero a bit below the navbar */
+.hero-container {
+  padding-top: 6rem; /* adjust 5rem/7rem as needed */
+}
