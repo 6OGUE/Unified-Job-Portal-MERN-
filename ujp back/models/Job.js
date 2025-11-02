@@ -9,7 +9,7 @@ const jobSchema = new mongoose.Schema({
   education: { type: [String], required: true }, // Changed 'qualification' to 'education'
   additionalQualification: { type: [String], default: [] },
   postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  createdAt: { type: Date, default: Date.now }
+  
 });
 
 export default mongoose.model('Job', jobSchema);

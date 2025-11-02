@@ -466,7 +466,8 @@ useEffect(() => {
       );
     }
     if (filters.role) {
-      tempJobs = tempJobs.filter(job => job.title === filters.role);
+      tempJobs = tempJobs.filter(job => job.title.toLowerCase() === filters.role.toLowerCase());
+
     }
     if (filters.salary) {
       tempJobs = tempJobs.filter(job => {

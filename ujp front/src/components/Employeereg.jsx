@@ -321,14 +321,12 @@ export default function JobSeekerReg() {
               placeholder="Certificate Title"
               value={cert.title}
               onChange={(e) => handleCertificateTitleChange(cert.id, e)}
-              required
               style={{ width: '60%', marginRight: '10px', padding: '8px' }}
             />
             <input
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
               onChange={(e) => handleCertificateFileChange(cert.id, e)}
-              required
               style={{ width: '35%' }}
             />
           </div>
