@@ -328,6 +328,22 @@ function ViewJobs() {
   const [jobToReport, setJobToReport] = useState(null);
   const [reportDescription, setReportDescription] = useState('');
   const [applyingJobId, setApplyingJobId] = useState(null);
+  const [reqCertLength, setReqCertLength] = useState(1);
+
+useEffect(() => {
+  if (!employeeData || !employeeData.education) return;
+
+  if (employeeData.education === 'Higher Secondary') {
+    setReqCertLength(2);
+  } else if (employeeData.education === 'Graduation') {
+    setReqCertLength(3);
+  } else if (employeeData.education === 'Postgraduation') {
+    setReqCertLength(4);
+  } else {
+    setReqCertLength(1);
+  }
+}, [employeeData]);
+
 
   // persisted applied job ids (strings) — kept in state for quick checks
   const [appliedJobIds, setAppliedJobIds] = useState([]); // array of job._id
@@ -374,6 +390,7 @@ function ViewJobs() {
           setLoading(false);
           return;
         }
+        
         setEmployeeData(userData);
 
         // 2) fetch jobs
@@ -396,8 +413,7 @@ function ViewJobs() {
           console.warn('Error parsing appliedJobs from localStorage', err);
         }
 
-        // 4) (optional) try fetching user's applications from backend to get authoritative applied list
-        //    if your backend returns applications as array with jobId fields, we'll extract them.
+        
         let serverApplied = [];
         try {
           const appsResp = await fetch('/api/applications', { headers: { 'Authorization': `Bearer ${token}` } });
@@ -502,6 +518,18 @@ function ViewJobs() {
       setShowConfirmModal(false);
       return;
     }
+    if(!employeeData.cvFilePath) {
+      toast.error('You Have Not Uploaded Your CV');
+      setShowConfirmModal(false);
+      return;
+    }
+    
+    if(employeeData.certificates.length < reqCertLength) {
+      toast.error('Not Enough Certificates');
+      setShowConfirmModal(false);
+      return;
+    }
+    
 
     setApplyingJobId(job._id);
     setShowConfirmModal(false);
@@ -611,6 +639,7 @@ function ViewJobs() {
       <h1 style={{ fontSize: '1.5rem', fontWeight: '200', color: '#1a202c', marginBottom: '2rem', textAlign: 'center', fontFamily: 'monospace' }}>
         Jobs For You
       </h1>
+
 
       {filteredJobs.length === 0 ? (
         <div style={{ textAlign: 'center', color: '#718096', fontSize: '1.125rem', marginTop: '3rem' }}>

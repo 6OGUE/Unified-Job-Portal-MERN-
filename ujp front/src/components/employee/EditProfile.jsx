@@ -10,9 +10,10 @@ const EditProfile = () => {
     const [cvFile, setCvFile] = useState(null);
     const [cvName, setCvName] = useState('');
     const [certificates, setCertificates] = useState([]);
-    const [newCertificates, setNewCertificates] = useState([{ title: '', file: null }]);
-    const [message, setMessage] = useState({ text: '', isError: false });
+    const [newCertificates, setNewCertificates] = useState([]);
 
+    const [message, setMessage] = useState({ text: '', isError: false });
+    
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
 
@@ -88,8 +89,8 @@ const EditProfile = () => {
     };
 
     const addCertificateField = () => {
-        setNewCertificates([...newCertificates, { title: '', file: null }]);
-    };
+    setNewCertificates([...newCertificates, { title: '', file: null }]);
+};
     
     const handleFileUploadSubmit = async (e) => {
         e.preventDefault();
@@ -177,7 +178,7 @@ const EditProfile = () => {
 
             <h2 style={{ ...styles.sectionTitle, marginTop: '36px' }}>Edit Uploads</h2>
             <div style={styles.certificateContainer}>
-                <h3 style={{ fontWeight: 600, marginBottom: 8 }}>CV</h3>
+                <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Resume</h3>
                 {cvName ? (
                     <div style={styles.fileBox}><span>{cvName}</span> <button style={styles.buttonDanger} onClick={handleCvDelete}> Delete </button></div>
                 ) : ( <input type="file" accept=".pdf" onChange={(e) => setCvFile(e.target.files[0])} style={styles.inputFile} required /> )}
@@ -194,18 +195,57 @@ const EditProfile = () => {
             </div>
 
             <form onSubmit={handleFileUploadSubmit} style={{ marginTop: 20 }}>
-                <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Add New Certificates</h3>
-                {newCertificates.map((cert, index) => (
-                    <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12, ...(window.innerWidth > 768 ? { flexDirection: 'row', alignItems: 'center' } : {}), }}>
-                        <input type="text" placeholder="Certificate Title" value={cert.title} onChange={(e) => handleCertificateChange(index, 'title', e.target.value)} style={{ ...styles.inputText, flex: 1, marginRight: 12 }} required />
-                        <input type="file" accept=".pdf" onChange={(e) => handleCertificateChange(index, 'file', e.target.files[0])} style={{ flex: 1, cursor: 'pointer' }} required />
-                    </div>
-                ))}
-                <button type="button" onClick={addCertificateField} style={styles.addMoreBtn}> + Add More </button>
-                <div style={{ textAlign: 'center' }}>
-                    <button type="submit" style={{ ...styles.buttonPrimary, marginTop: 24, width: '100%', fontSize: 18, padding: '12px 0', }}>Upload New Files</button>
-                </div>
-            </form>
+    <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Add New Certificates</h3>
+
+    {newCertificates.map((cert, index) => (
+        <div
+            key={index}
+            style={{
+                display: 'flex',
+                flexDirection: window.innerWidth > 768 ? 'row' : 'column',
+                alignItems: window.innerWidth > 768 ? 'center' : 'flex-start',
+                gap: 8,
+                marginBottom: 12,
+            }}
+        >
+            <input
+                type="text"
+                placeholder="Certificate Title"
+                value={cert.title}
+                onChange={(e) => handleCertificateChange(index, 'title', e.target.value)}
+                style={{ ...styles.inputText, flex: 1, marginRight: 12 }}
+                required
+            />
+            <input
+                type="file"
+                accept=".pdf"
+                onChange={(e) => handleCertificateChange(index, 'file', e.target.files[0])}
+                style={{ flex: 1, cursor: 'pointer' }}
+            />
+        </div>
+    ))}
+
+    <button type="button" onClick={addCertificateField} style={styles.addMoreBtn}>
+        + Add More
+    </button>
+
+    {newCertificates.length >= 0 && (
+        <div style={{ textAlign: 'center' }}>
+            <button
+                type="submit"
+                style={{
+                    ...styles.buttonPrimary,
+                    marginTop: 24,
+                    width: '100%',
+                    fontSize: 18,
+                    padding: '12px 0',
+                }}
+            >
+                Upload New Files
+            </button>
+        </div>
+    )}
+</form>
             
             {message.text && (
                 <p style={{ ...styles.messageBox, color: message.isError ? 'red' : 'green' }}>
