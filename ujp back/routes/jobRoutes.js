@@ -1,7 +1,8 @@
 import express from 'express';
 import Job from '../models/Job.js';
 import { protect } from '../middleware/authMiddleware.js';
-import Report from '../models/report.js'; // <-- Correct import for ES module
+import Report from '../models/report.js';
+import mongoose from 'mongoose';
 import { 
   postJob, 
   getFilteredJobs, 
@@ -40,16 +41,39 @@ router.get('/count', async (req, res) => {
   }
 });
 
+// GET /api/jobs/:id - Get a job by ID
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    // Normalize the incoming id and validate it. We avoid noisy debug logs here.
+    const sanitizedJobId = String(jobId).replace(/[^0-9a-fA-F]/g, '');
+
+    if (!mongoose.Types.ObjectId.isValid(sanitizedJobId)) {
+      return res.status(400).json({ message: 'Invalid job ID format' });
+    }
+
+    const job = await Job.findById(sanitizedJobId);
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    res.json(job);
+  } catch (err) {
+    console.error('Error fetching job:', err);
+    res.status(500).json({ message: "Server error while fetching job details" });
+  }
+});
+
 // DELETE /api/jobs/:id - Delete a job by ID
 router.delete('/:id', protect, deleteJob);
 
 // POST /api/jobs/report - Employee reports a job
 router.post('/report', protect, async (req, res) => {
   try {
-    const { companyName, jobTitle, description } = req.body;
+    const { companyName, jobTitle, description, jobId } = req.body;
     const employeeName = req.user.name; // Assuming req.user.name is set by authMiddleware
 
-    if (!companyName || !jobTitle || !description || !employeeName) {
+    if (!companyName || !jobTitle || !description || !employeeName || !jobId) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
 
@@ -57,7 +81,8 @@ router.post('/report', protect, async (req, res) => {
       companyName,
       jobTitle,
       employeeName,
-      description
+      description,
+      jobId
     });
 
     await report.save();

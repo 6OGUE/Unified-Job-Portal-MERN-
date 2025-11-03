@@ -16,6 +16,11 @@ const reportSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  jobId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Job',
+    required: true
+  },
   description: {
     type: String,
     required: true,

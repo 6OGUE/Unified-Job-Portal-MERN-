@@ -210,8 +210,13 @@ router.post('/temporary-list/reject/:id', async (req, res) => {
 // GET /api/admin/reports - Get all reports
 router.get('/reports', async (req, res) => {
   try {
-    const reports = await Report.find().sort({ createdAt: -1 });
-    res.json(reports);
+    const reports = await Report.find()
+      .populate('jobId')
+      .sort({ createdAt: -1 });
+
+    // Return reports with populated job data when available.
+    const formattedReports = reports.map(report => report.toObject());
+    res.json(formattedReports);
   } catch (error) {
     console.error('Error fetching reports:', error);
     res.status(500).json({ message: 'Server error while fetching reports' });
